@@ -1,0 +1,37 @@
+{ pkgs }:
+with pkgs;
+[
+  binutils
+  black
+  cargo-nextest
+  ccls
+  clang-tools
+  curl
+  fzf
+  gcc
+  glibc
+  gnumake
+  isort
+  lldb
+  nixfmt-rfc-style
+  openssl
+  pkg-config
+  podman-compose
+  prettierd
+  pyright
+  python313
+  python313Packages.debugpy
+  ripgrep
+  rustup
+  stow
+  stylua
+  tmux
+  tmuxPlugins.sensible
+  tmuxPlugins.catppuccin
+  xclip
+  xdotool
+  xorg.xhost
+  xsel
+  nodejs
+  nodePackages.svelte-language-server
+]
