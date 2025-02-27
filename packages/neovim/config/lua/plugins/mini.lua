@@ -1,0 +1,5 @@
+require("mini.surround").setup()
+require("mini.comment").setup()
+require("mini.ai").setup()
+require("mini.hipatterns").setup()
+require("mini.indentscope").setup()
