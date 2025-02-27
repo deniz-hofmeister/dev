@@ -41,9 +41,24 @@
             overlayNeovim
           ];
         };
+        
+        dependencies = import ./packages/dependencies { inherit pkgs; };
+        
+        myZsh = pkgs.symlinkJoin {
+          name = "zsh-with-dependencies";
+          paths = [ pkgs.zsh ];
+          buildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/zsh \
+              --prefix PATH : ${pkgs.lib.makeBinPath dependencies}
+          '';
+        };
       in
       {
-        packages.default = pkgs.myNeovim;
+        packages = {
+          default = pkgs.myNeovim;
+          zsh = myZsh;
+        };
         apps = {
           neovim = {
             type = "app";
@@ -51,7 +66,7 @@
           };
           zsh = {
             type = "app";
-            program = "${pkgs.zsh}/bin/zsh";
+            program = "${myZsh}/bin/zsh";
           };
         };
       }
