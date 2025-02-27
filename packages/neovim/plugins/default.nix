@@ -2,7 +2,6 @@
 with pkgs.vimPlugins;
 [
   (nvim-treesitter.withPlugins (plugins: with plugins; [ xml ]))
-  CopilotChat-nvim
   catppuccin-nvim
   cmp-buffer
   cmp-cmdline
@@ -10,9 +9,6 @@ with pkgs.vimPlugins;
   cmp-path
   cmp_luasnip
   conform-nvim
-  copilot-cmp
-  copilot-lua
-  copilot-lualine
   gitsigns-nvim
   lsp_lines-nvim
   lualine-nvim
