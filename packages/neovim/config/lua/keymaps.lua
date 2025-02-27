@@ -1,3 +1,10 @@
+local wk = require("which-key")
+wk.setup({
+	prefix = "<leader>",
+})
+
+local opts = { noremap = true, silent = true }
+
 -- Neo-tree
 vim.keymap.set("n", "<leader>e", ":Neotree<CR>", { noremap = true, silent = true })
 
@@ -59,6 +66,7 @@ vim.keymap.set("n", "<leader>ch", vim.lsp.buf.hover, vim.tbl_extend("force", opt
 vim.keymap.set("n", "<leader>cd", require("lsp_lines").toggle, { desc = "Toggle LSP Messages" })
 
 -- Telescope mappings
+local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>f", "<nop>", { desc = "Find" })
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files" })
 vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live grep" })
@@ -67,6 +75,7 @@ vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Search help tags"
 vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
 
 -- DAP mappings
+local dap, dapui = require("dap"), require("dapui")
 vim.keymap.set("n", "<leader>d", "<nop>", { desc = "Debug" })
 vim.keymap.set("n", "<leader>dc", dap.continue, { desc = "Continue" })
 vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Toggle Breakpoint" })

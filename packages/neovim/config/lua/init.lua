@@ -22,11 +22,6 @@ cmp.setup({
 	}),
 })
 
-local wk = require("which-key")
-wk.setup({
-	prefix = "<leader>",
-})
-
 require("catppuccin").setup({
 	flavour = "macchiato",
 	transparent_background = true,
@@ -92,7 +87,6 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 
 local lspconfig = require("lspconfig")
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
-local opts = { noremap = true, silent = true }
 
 lspconfig.clangd.setup({ capabilities = capabilities })
 lspconfig.pyright.setup({ capabilities = capabilities })
@@ -130,7 +124,6 @@ telescope.setup({
 
 telescope.load_extension("fzf")
 
-local builtin = require("telescope.builtin")
 local dap = require("dap")
 
 dap.adapters.lldb = {
