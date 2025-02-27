@@ -44,9 +44,15 @@
       in
       {
         packages.default = pkgs.myNeovim;
-        apps.default = {
-          type = "app";
-          program = "${pkgs.myNeovim}/bin/nvim";
+        apps = {
+          neovim = {
+            type = "app";
+            program = "${pkgs.myNeovim}/bin/nvim";
+          };
+          zsh = {
+            type = "app";
+            program = "${pkgs.zsh}/bin/zsh";
+          };
         };
       }
     );

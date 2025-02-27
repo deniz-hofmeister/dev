@@ -32,6 +32,7 @@ with pkgs;
   xdotool
   xorg.xhost
   xsel
+  zsh
   nodejs
   nodePackages.svelte-language-server
 ]
