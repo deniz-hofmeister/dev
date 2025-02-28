@@ -1,7 +1,15 @@
 { pkgs }:
 with pkgs.vimPlugins;
 [
-  (nvim-treesitter.withPlugins (plugins: with plugins; [ xml ]))
+  (nvim-treesitter.withPlugins (plugins: with plugins; [ 
+    c
+    cpp
+    javascript
+    python
+    svelte
+    typescript
+    xml
+  ]))
   catppuccin-nvim
   cmp-buffer
   cmp-cmdline
