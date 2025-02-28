@@ -1,11 +1,32 @@
 { pkgs }:
 with pkgs;
-[
+let
+  # Setup shell hook to configure paths for pkg-config
+  opensslEnv = pkgs.symlinkJoin {
+    name = "openssl-with-paths";
+    paths = [ openssl openssl.dev openssl.out ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/openssl \
+        --set PKG_CONFIG_PATH "${openssl.dev}/lib/pkgconfig"
+    '';
+  };
+  
+  # Create shell hook to set OpenSSL environment variables
+  opensslHook = ''
+    export OPENSSL_ROOT_DIR=${openssl.dev}
+    export OPENSSL_LIBRARIES=${openssl.out}/lib
+    export OPENSSL_INCLUDE_DIR=${openssl.dev}/include
+    export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${openssl.dev}/lib/pkgconfig
+  '';
+
+  packages = [
   binutils
   black
   cargo-nextest
   ccls
   clang-tools
+  cmake
   curl
   fzf
   gcc
@@ -14,7 +35,8 @@ with pkgs;
   isort
   lldb
   nixfmt-rfc-style
-  openssl
+  opensslEnv
+  # Explicit paths to support cmake find_package
   pkg-config
   podman-compose
   prettierd
@@ -35,4 +57,9 @@ with pkgs;
   zsh
   nodejs
   nodePackages.svelte-language-server
-]
+];
+in
+{
+  inherit packages;
+  shellHook = opensslHook;
+}
