@@ -45,6 +45,7 @@ let
   python313Packages.debugpy
   ripgrep
   rustup
+  spdlog
   stow
   stylua
   tmux
