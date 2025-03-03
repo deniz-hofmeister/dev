@@ -40,7 +40,6 @@ let
     lldb
     nixfmt-rfc-style
     opensslEnv
-    # Explicit paths to support cmake find_package
     pkg-config
     podman-compose
     prettierd
