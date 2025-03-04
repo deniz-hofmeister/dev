@@ -56,7 +56,6 @@ let
     tmuxPlugins.sensible
     tmuxPlugins.catppuccin
     vscode-extensions.ms-vscode.cpptools
-    cpptools # Add the extracted binaries to the PATH
     xclip
     xdotool
     xorg.xhost
