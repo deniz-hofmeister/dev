@@ -18,10 +18,10 @@ dap.configurations.cpp = {
 		type = "cppdbg",
 		request = "launch",
 		program = function()
-			return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+			return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/build/", "file")
 		end,
 		cwd = "${workspaceFolder}",
-		stopOnEntry = true,
+		stopOnEntry = false,
 		setupCommands = {
 			{
 				text = "-enable-pretty-printing",
@@ -83,4 +83,3 @@ require("nvim-dap-virtual-text").setup({
 	virt_text_win_col = 60,
 	highlight_new_as_changed = true,
 })
-

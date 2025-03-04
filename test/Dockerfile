@@ -38,7 +38,8 @@ RUN . /opt/ros/humble/setup.sh && \
     cd src/ros2_cpp_pkg && \ 
     mkdir build && \ 
     cd build && \
-    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_BUILD_TYPE=Debug .. && \
+    make
 
 RUN ln -s src/ros2_cpp_pkg/build/compile_commands.json compile_commands.json
 
