@@ -6,12 +6,38 @@ dap.adapters.lldb = {
 	name = "lldb",
 }
 
+dap.adapters.cppdbg = {
+	id = "cppdbg",
+	type = "executable",
+	command = vim.fn.exepath("OpenDebugAD7"),
+}
+
+dap.configurations.cpp = {
+	{
+		name = "Launch file",
+		type = "cppdbg",
+		request = "launch",
+		program = function()
+			return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+		end,
+		cwd = "${workspaceFolder}",
+		stopOnEntry = true,
+		setupCommands = {
+			{
+				text = "-enable-pretty-printing",
+				description = "enable pretty printing",
+				ignoreFailures = false,
+			},
+		},
+	},
+}
+
+-- Share configurations with C
+dap.configurations.c = dap.configurations.cpp
+
 -- DAP sign configuration
 vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DapBreakpoint" })
-vim.fn.sign_define(
-	"DapStopped",
-	{ text = "", texthl = "DapStopped", numhl = "DapStopped", linehl = "DapStoppedLine" }
-)
+vim.fn.sign_define("DapStopped", { text = "", texthl = "DapStopped", numhl = "DapStopped", linehl = "DapStoppedLine" })
 vim.fn.sign_define("DapBreakpointRejected", {
 	text = "",
 	texthl = "DapBreakpointRejected",
@@ -57,3 +83,4 @@ require("nvim-dap-virtual-text").setup({
 	virt_text_win_col = 60,
 	highlight_new_as_changed = true,
 })
+

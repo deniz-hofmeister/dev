@@ -34,6 +34,7 @@ let
     curl
     fzf
     gcc
+    gdb
     glibc
     gnumake
     isort
@@ -54,6 +55,7 @@ let
     tmux
     tmuxPlugins.sensible
     tmuxPlugins.catppuccin
+    vscode-extensions.ms-vscode.cpptools
     xclip
     xdotool
     xorg.xhost
