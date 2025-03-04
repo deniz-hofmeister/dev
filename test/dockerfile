@@ -1,0 +1,43 @@
+FROM ros:humble-ros-core
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    xz-utils \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV USER=root
+ENV NIX_INSTALLER_NO_MODIFY_PROFILE=1
+RUN curl -L https://nixos.org/nix/install | sh -s -- --daemon --yes
+
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && \
+    echo ". /nix/var/nix/profiles/default/etc/profile.d/nix.sh" >> ~/.bashrc
+
+WORKDIR /workspace
+COPY ros2_cpp_pkg /workspace/src/ros2_cpp_pkg
+COPY ros2_py_pkg /workspace/src/ros2_py_pkg
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    python3-colcon-common-extensions \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && . /opt/ros/humble/setup.sh \
+    && colcon build --symlink-install \
+    && echo "source /workspace/install/setup.bash" >> ~/.bashrc
+
+RUN . /opt/ros/humble/setup.sh && \
+    cd src/ros2_cpp_pkg && \ 
+    mkdir build && \ 
+    cd build && \
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
+
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix.sh && \
+    nix build --extra-experimental-features "nix-command flakes" github:deniz-hofmeister/dev
+
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix.sh && \
+    echo 'alias nv="nix run --extra-experimental-features \"nix-command flakes\" --refresh github:deniz-hofmeister/dev#neovim"' >> ~/.bashrc && \
+    echo 'alias zsh="nix run --extra-experimental-features \"nix-command flakes\" --refresh github:deniz-hofmeister/dev#zsh"' >> ~/.bashrc
+
+CMD ["/bin/bash"]
