@@ -16,12 +16,17 @@ let
     '';
   };
 
-  # Create shell hook to set OpenSSL environment variables
   opensslHook = ''
     export OPENSSL_ROOT_DIR=${openssl.dev}
     export OPENSSL_LIBRARIES=${openssl.out}/lib
     export OPENSSL_INCLUDE_DIR=${openssl.dev}/include
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${openssl.dev}/lib/pkgconfig
+  '';
+
+  cpptools = pkgs.runCommand "vscode-cpptools-extracted" { } ''
+    mkdir -p $out/bin
+    cp -r ${vscode-extensions.ms-vscode.cpptools}/share/vscode/extensions/ms-vscode.cpptools/debugAdapters/bin/* $out/bin/
+    chmod +x $out/bin/*
   '';
 
   packages = [
@@ -31,6 +36,7 @@ let
     ccls
     clang-tools
     cmake
+    cpptools
     curl
     fzf
     gcc
