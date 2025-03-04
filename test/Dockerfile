@@ -5,6 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     xz-utils \
+    git \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV USER=root
@@ -15,17 +16,23 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && \
     echo ". /nix/var/nix/profiles/default/etc/profile.d/nix.sh" >> ~/.bashrc
 
 WORKDIR /workspace
-COPY ros2_cpp_pkg /workspace/src/ros2_cpp_pkg
-COPY ros2_py_pkg /workspace/src/ros2_py_pkg
+COPY . /workspace
+
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix.sh && \
+    nix build --extra-experimental-features "nix-command flakes" .
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
-    python3-colcon-common-extensions \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && . /opt/ros/humble/setup.sh \
-    && colcon build --symlink-install \
-    && echo "source /workspace/install/setup.bash" >> ~/.bashrc
+    python3-colcon-common-extensions && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN . /opt/ros/humble/setup.sh && \
+    mkdir src && \
+    mv test/ros2_cpp_pkg src/ && \
+    mv test/ros2_py_pkg src/ && \
+    colcon build --symlink-install && \
+    echo "source /workspace/install/setup.bash" >> ~/.bashrc
 
 RUN . /opt/ros/humble/setup.sh && \
     cd src/ros2_cpp_pkg && \ 
@@ -33,8 +40,7 @@ RUN . /opt/ros/humble/setup.sh && \
     cd build && \
     cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
 
-RUN . /nix/var/nix/profiles/default/etc/profile.d/nix.sh && \
-    nix build --extra-experimental-features "nix-command flakes" github:deniz-hofmeister/dev
+RUN ln -s src/ros2_cpp_pkg/build/compile_commands.json compile_commands.json
 
 RUN . /nix/var/nix/profiles/default/etc/profile.d/nix.sh && \
     echo 'alias nv="nix run --extra-experimental-features \"nix-command flakes\" --refresh github:deniz-hofmeister/dev#neovim"' >> ~/.bashrc && \
