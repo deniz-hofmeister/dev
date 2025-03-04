@@ -24,13 +24,6 @@ let
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${openssl.dev}/lib/pkgconfig
   '';
 
-  # Extract cpptools extension binaries for DAP
-  cpptools = pkgs.runCommand "vscode-cpptools-extracted" {} ''
-    mkdir -p $out/bin
-    cp -r ${vscode-extensions.ms-vscode.cpptools}/share/vscode/extensions/ms-vscode.cpptools/debugAdapters/bin/* $out/bin/
-    chmod +x $out/bin/*
-  '';
-
   packages = [
     binutils
     black
