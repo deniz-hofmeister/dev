@@ -95,6 +95,9 @@ vim.keymap.set("n", "<leader>df", function()
 		end
 	end
 end, { desc = "Focus on Scopes" })
+vim.keymap.set("n", "<leader>dt", function()
+	require("dap").terminate()
+end, { desc = "Terminate debug session" })
 
 -- Rust mappings
 vim.keymap.set("n", "<leader>r", "<nop>", { desc = "Rust" })
