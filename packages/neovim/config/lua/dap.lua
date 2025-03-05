@@ -1,5 +1,5 @@
 local dap = require("dap")
-
+dap.set_log_level("TRACE")
 dap.adapters.lldb = {
 	type = "executable",
 	command = vim.fn.exepath("lldb-dap"),
@@ -21,7 +21,7 @@ dap.configurations.cpp = {
 			return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/build/", "file")
 		end,
 		cwd = "${workspaceFolder}",
-		stopOnEntry = false,
+		stopOnEntry = true,
 		setupCommands = {
 			{
 				text = "-enable-pretty-printing",

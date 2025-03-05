@@ -14,3 +14,4 @@ vim.g.rustaceanvim = {
 		},
 	},
 }
+
