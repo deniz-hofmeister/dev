@@ -63,15 +63,18 @@ dap.configurations.cpp = {
 dap.configurations.c = dap.configurations.cpp
 
 -- DAP sign configuration
-vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DapBreakpoint" })
-vim.fn.sign_define("DapStopped", { text = "", texthl = "DapStopped", numhl = "DapStopped", linehl = "DapStoppedLine" })
+vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DapBreakpoint" })
+vim.fn.sign_define(
+	"DapStopped",
+	{ text = "▶", texthl = "DapStopped", numhl = "DapStopped", linehl = "DapStoppedLine" }
+)
 vim.fn.sign_define("DapBreakpointRejected", {
-	text = "",
+	text = "✗",
 	texthl = "DapBreakpointRejected",
 	linehl = "DapBreakpointRejected",
 	numhl = "DapBreakpointRejected",
 })
-vim.fn.sign_define("DapLogPoint", { text = "", texthl = "DapLogPoint" })
+vim.fn.sign_define("DapLogPoint", { text = "◆", texthl = "DapLogPoint" })
 
 -- DAP UI configuration
 local dapui = require("dapui")
