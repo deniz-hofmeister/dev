@@ -19,6 +19,12 @@ dap.adapters.cppdbg = {
 	command = vim.fn.exepath("OpenDebugAD7"),
 }
 
+dap.adapters.python = {
+	type = "executable",
+	command = vim.fn.exepath("python3.10"), -- Use exepath to find the full path to python3
+	args = { "-m", "debugpy.adapter" },
+}
+
 dap.configurations.cpp = {
 	{
 		name = "Launch file",
@@ -62,6 +68,37 @@ dap.configurations.cpp = {
 -- Share configurations with C
 dap.configurations.c = dap.configurations.cpp
 
+dap.configurations.python = {
+	{
+		type = "python",
+		request = "launch",
+		name = "Launch file",
+		program = "${file}",
+		pythonPath = function()
+			-- Detect python path
+			local venv = os.getenv("VIRTUAL_ENV")
+			if venv then
+				return venv .. "/bin/python"
+			end
+
+			-- Check for common virtual environment paths
+			local cwd = vim.fn.getcwd()
+			for _, pattern in ipairs({ "/venv/", "/.venv/", "/env/", "/.env/" }) do
+				local path = cwd .. pattern .. "bin/python"
+				if vim.fn.executable(path) == 1 then
+					return path
+				end
+			end
+
+			-- Fall back to system python
+			return "python"
+		end,
+		cwd = "${workspaceFolder}",
+		stopOnEntry = false,
+		justMyCode = false, -- Set to true to debug only your code
+		console = "integratedTerminal",
+	},
+}
 -- DAP sign configuration
 vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DapBreakpoint" })
 vim.fn.sign_define(

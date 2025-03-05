@@ -29,6 +29,17 @@ let
     chmod +x $out/bin/*
   '';
 
+  pythonWithDebugpy = python310.withPackages (
+    ps: with ps; [
+      debugpy
+    ]
+  );
+
+  # Hook to ensure spdlog shared libraries are available
+  spdlogHook = ''
+    export LD_LIBRARY_PATH=${spdlog}/lib:$LD_LIBRARY_PATH
+  '';
+
   packages = [
     binutils
     black
@@ -51,8 +62,7 @@ let
     podman-compose
     prettierd
     pyright
-    python313
-    python313Packages.debugpy
+    pythonWithDebugpy
     ripgrep
     rustup
     spdlog
@@ -76,5 +86,5 @@ let
 in
 {
   inherit packages;
-  shellHook = opensslHook;
+  shellHook = opensslHook + spdlogHook;
 }
