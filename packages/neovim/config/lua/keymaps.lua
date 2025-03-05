@@ -157,6 +157,7 @@ vim.keymap.set("n", "<leader>mh", "<cmd>Markview hybridToggle<cr>", { desc = "To
 -- Oil file manager
 vim.keymap.set("n", "<leader>o", "<cmd>Oil --float<cr>", { desc = "Oil" })
 
+-- CPP Projects Specific
 vim.keymap.set("n", "<leader>c", "<nop>", { desc = "cpp" })
 vim.keymap.set("n", "<leader>cb", function()
 	-- Find the project root (assuming it contains a .git directory)
@@ -183,8 +184,6 @@ vim.keymap.set("n", "<leader>cb", function()
 	local deepest_cmake = cmake_files[#cmake_files]
 	local dir = vim.fs.dirname(deepest_cmake)
 
-	-- Construct the command
-	-- Construct the command
 	-- Construct the command
 	local cmd = string.format(
 		"cd %s && \
