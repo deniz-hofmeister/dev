@@ -54,6 +54,10 @@
           export OPENSSL_LIBRARIES=${pkgs.openssl.out}/lib
           export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
           export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${pkgs.openssl.dev}/lib/pkgconfig
+          
+          # Add host system libraries to search paths
+          export NIX_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$NIX_LIBRARY_PATH
+          export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
           # Source user's zshrc if it exists
           if [[ -f ~/.zshrc ]]; then

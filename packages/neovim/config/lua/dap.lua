@@ -97,6 +97,10 @@ dap.configurations.python = {
 		stopOnEntry = false,
 		justMyCode = false, -- Set to true to debug only your code
 		console = "integratedTerminal",
+		-- Add ROS library paths to the environment
+		env = {
+			LD_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:${env:LD_LIBRARY_PATH}",
+		},
 	},
 }
 -- DAP sign configuration
