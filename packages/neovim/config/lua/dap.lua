@@ -1,10 +1,17 @@
 local dap = require("dap")
-dap.set_log_level("TRACE")
-dap.adapters.lldb = {
-	type = "executable",
-	command = vim.fn.exepath("lldb-dap"),
-	name = "lldb",
-}
+
+-- Helper function to find project root (where CMakeLists.txt is)
+local function find_cmake_root()
+	local current_file = vim.fn.expand("%:p")
+	local current_dir = vim.fn.fnamemodify(current_file, ":h")
+	local cmake_file = vim.fn.findfile("CMakeLists.txt", current_dir .. ";")
+
+	if cmake_file ~= "" then
+		return vim.fn.fnamemodify(cmake_file, ":h")
+	end
+
+	return vim.fn.getcwd() -- Fallback to current working directory
+end
 
 dap.adapters.cppdbg = {
 	id = "cppdbg",
@@ -18,14 +25,34 @@ dap.configurations.cpp = {
 		type = "cppdbg",
 		request = "launch",
 		program = function()
-			return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/build/", "file")
+			local cmake_root = find_cmake_root()
+			return vim.fn.input("Path to executable: ", cmake_root .. "/build/", "file")
 		end,
 		cwd = "${workspaceFolder}",
 		stopOnEntry = true,
+		sourceFileMap = {
+			-- Map build directory source files to src directory
+			[function()
+				local cmake_root = find_cmake_root()
+				return cmake_root .. "/build"
+			end] = function()
+				local cmake_root = find_cmake_root()
+				return cmake_root .. "/src"
+			end,
+		},
 		setupCommands = {
 			{
 				text = "-enable-pretty-printing",
 				description = "enable pretty printing",
+				ignoreFailures = false,
+			},
+			{
+				-- This will be evaluated when the debug session starts
+				text = function()
+					local cmake_root = find_cmake_root()
+					return "set substitute-path " .. cmake_root .. "/build " .. cmake_root .. "/src"
+				end,
+				description = "map build to src directory",
 				ignoreFailures = false,
 			},
 		},
