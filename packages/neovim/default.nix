@@ -26,6 +26,15 @@ pkgs.writeShellApplication {
   name = "nvim";
   runtimeInputs = [ neovimRuntimeDependencies ];
   text = ''
+    # Set up library paths from dependencies
+    ${dependencies.shellHook}
+    
+    # Add library paths for all dependencies
+    export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath dependencies.packages}:$LD_LIBRARY_PATH
+    
+    # Add host system libraries to search paths (from flake.nix)
+    export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+    
     ${NeovimUnwrapped}/bin/nvim "$@"
   '';
 }

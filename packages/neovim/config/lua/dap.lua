@@ -23,6 +23,10 @@ dap.adapters.python = {
 	type = "executable",
 	command = vim.fn.exepath("python3.10"), -- Use exepath to find the full path to python3
 	args = { "-m", "debugpy.adapter" },
+	options = {
+		env = vim.empty_dict(),  -- Use empty dict to not override any env vars
+		inherit_env = true,  -- Inherit parent process environment
+	},
 }
 
 dap.configurations.cpp = {
@@ -97,10 +101,10 @@ dap.configurations.python = {
 		stopOnEntry = false,
 		justMyCode = false, -- Set to true to debug only your code
 		console = "integratedTerminal",
-		-- Add ROS library paths to the environment
-		env = {
-			LD_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:${env:LD_LIBRARY_PATH}",
-		},
+		-- Inherit all host environment variables
+		env = vim.empty_dict(),
+		envFile = vim.fn.expand("~/.env"),  -- Optional: load additional env vars from file
+		inheritEnv = true,  -- Inherit all environment from parent process
 	},
 }
 -- DAP sign configuration
