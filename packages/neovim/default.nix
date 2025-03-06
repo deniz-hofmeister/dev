@@ -26,15 +26,13 @@ pkgs.writeShellApplication {
   name = "nvim";
   runtimeInputs = [ neovimRuntimeDependencies ];
   text = ''
-    # Set up library paths from dependencies
-    ${dependencies.shellHook}
-    
-    # Add library paths for all dependencies
-    export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath dependencies.packages}:$LD_LIBRARY_PATH
-    
-    # Add host system libraries to search paths (from flake.nix)
-    export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-    
+    export OPENSSL_ROOT_DIR=${pkgs.openssl.dev}
+    export OPENSSL_LIBRARIES=${pkgs.openssl.out}/lib
+    export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
+    export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig
+    export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
+    export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
+    # export CMAKE_PREFIX_PATH=${pkgs.spdlog.dev}:${pkgs.fmt.dev}:''${CMAKE_PREFIX_PATH:-}
     ${NeovimUnwrapped}/bin/nvim "$@"
   '';
 }

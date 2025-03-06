@@ -49,6 +49,7 @@ let
     cmake
     cpptools
     curl
+    fmt
     fzf
     gcc
     gdb
