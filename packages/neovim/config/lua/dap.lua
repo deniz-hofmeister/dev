@@ -24,8 +24,8 @@ dap.adapters.python = {
 	command = vim.fn.exepath("python3.10"), -- Use exepath to find the full path to python3
 	args = { "-m", "debugpy.adapter" },
 	options = {
-		env = vim.empty_dict(),  -- Use empty dict to not override any env vars
-		inherit_env = true,  -- Inherit parent process environment
+		env = vim.empty_dict(), -- Use empty dict to not override any env vars
+		inherit_env = true, -- Inherit parent process environment
 	},
 }
 
@@ -103,8 +103,8 @@ dap.configurations.python = {
 		console = "integratedTerminal",
 		-- Inherit all host environment variables
 		env = vim.empty_dict(),
-		envFile = vim.fn.expand("~/.env"),  -- Optional: load additional env vars from file
-		inheritEnv = true,  -- Inherit all environment from parent process
+		envFile = vim.fn.expand("~/.env"), -- Optional: load additional env vars from file
+		inheritEnv = true, -- Inherit all environment from parent process
 	},
 }
 -- DAP sign configuration
@@ -128,12 +128,20 @@ dapui.setup({
 	layouts = {
 		{
 			elements = {
-				{ id = "scopes", size = 0.6 },
-				{ id = "breakpoints", size = 0.25 },
+				{ id = "scopes", size = 0.7 },
+				{ id = "breakpoints", size = 0.15 },
 				{ id = "watches", size = 0.15 },
 			},
 			size = 40,
 			position = "left",
+		},
+		{
+			elements = {
+				{ id = "repl", size = 0.5 },
+				{ id = "console", size = 0.5 },
+			},
+			size = 0.25,
+			position = "bottom",
 		},
 	},
 })
