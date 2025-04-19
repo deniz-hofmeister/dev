@@ -45,4 +45,3 @@ vim.diagnostic.config({
 })
 
 require("lsp_lines").setup()
-

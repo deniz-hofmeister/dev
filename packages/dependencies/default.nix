@@ -65,7 +65,8 @@ let
     pyright
     pythonWithDebugpy
     ripgrep
-    rustup
+    # rustup
+    rust-analyzer
     spdlog
     stow
     stylua
