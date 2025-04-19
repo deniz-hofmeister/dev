@@ -2,3 +2,6 @@ build/
 **/build/ 
 .cache/
 **/.cache/ 
+result
+result-*
+.direnv/

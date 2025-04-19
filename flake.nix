@@ -5,9 +5,8 @@
     nixpkgs = {
       url = "github:NixOS/nixpkgs";
     };
-    neovim = {
-      url = "github:nix-community/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
+    nixpkgs-unstable = {
+      url = "github:NixOS/nixpkgs/nixos-unstable";
     };
     flake-utils = {
       url = "github:numtide/flake-utils";
@@ -18,14 +17,21 @@
     {
       self,
       nixpkgs,
-      neovim,
+      nixpkgs-unstable,
       flake-utils,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
+        pkgsUnstable = import nixpkgs-unstable {
+          inherit system;
+          config = {
+            allowUnfree = true;
+          };
+        };
+        
         overlayFlakeInputs = prev: final: {
-          neovim = neovim.packages.${system}.neovim;
+          neovim-unwrapped = pkgsUnstable.neovim-unwrapped;
         };
 
         overlayNeovim = prev: final: {
