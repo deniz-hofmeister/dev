@@ -16,6 +16,7 @@ with pkgs.vimPlugins;
   cmp-nvim-lsp
   cmp-path
   cmp_luasnip
+  diffview-nvim
   conform-nvim
   gitsigns-nvim
   lsp_lines-nvim

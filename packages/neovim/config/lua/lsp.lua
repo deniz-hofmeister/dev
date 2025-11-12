@@ -1,16 +1,12 @@
-local lspconfig = require("lspconfig")
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-lspconfig.clangd.setup({ capabilities = capabilities })
-lspconfig.pyright.setup({ capabilities = capabilities })
-lspconfig.svelte.setup({ capabilities = capabilities })
-lspconfig.tsserver.setup({ capabilities = capabilities })
-lspconfig.html.setup({ capabilities = capabilities })
-lspconfig.cssls.setup({ capabilities = capabilities })
-lspconfig.jsonls.setup({ capabilities = capabilities })
-lspconfig.eslint.setup({ capabilities = capabilities })
+-- Configure LSP servers using Neovim 0.11+ API
+local servers = { 'clangd', 'pyright', 'svelte', 'ts_ls', 'html', 'cssls', 'jsonls', 'eslint' }
 
-local configs = require("lspconfig.configs")
+for _, server in ipairs(servers) do
+  vim.lsp.config(server, { capabilities = capabilities })
+  vim.lsp.enable(server)
+end
 
 -- Custom diagnostic configuration
 local colors = {

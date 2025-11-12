@@ -12,6 +12,9 @@ vim.keymap.set("n", "<leader>e", ":Neotree<CR>", { noremap = true, silent = true
 vim.keymap.set("n", "<leader>g", "<nop>", { desc = "Git" })
 vim.keymap.set("n", "<leader>gg", ":Git<CR>", { desc = "Fugitive" }, { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>gd", ":Gdiffsplit<CR>", { desc = "Diff Split" }, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>gv", "<cmd>DiffviewOpen<CR>", { desc = "Diffview" }, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>gV", "<cmd>DiffviewFileHistory<CR>", { desc = "File History" }, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>gq", "<cmd>DiffviewClose<CR>", { desc = "Close Diffview" }, { noremap = true, silent = true })
 vim.keymap.set(
 	"n",
 	"<leader>ghh",
