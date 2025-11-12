@@ -21,6 +21,22 @@ vim.keymap.set("n", "<leader>gb", function()
 		end
 	end)
 end, { desc = "Compare with branch..." }, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>gm", function()
+	vim.ui.input({ prompt = "Merge with branch: " }, function(branch)
+		if branch and branch ~= "" then
+			-- Perform git merge without auto-commit
+			vim.fn.system("git merge --no-commit --no-ff " .. vim.fn.shellescape(branch))
+			local exit_code = vim.v.shell_error
+
+			if exit_code == 0 then
+				print("Merge completed. Review changes and commit.")
+			else
+				print("Merge conflicts detected. Resolve in diffview.")
+			end
+			vim.cmd("DiffviewOpen")
+		end
+	end)
+end, { desc = "Merge with branch..." }, { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>gq", "<cmd>DiffviewClose<CR>", { desc = "Close Diffview" }, { noremap = true, silent = true })
 vim.keymap.set(
 	"n",
