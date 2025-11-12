@@ -14,6 +14,13 @@ vim.keymap.set("n", "<leader>gg", ":Git<CR>", { desc = "Fugitive" }, { noremap =
 vim.keymap.set("n", "<leader>gd", ":Gdiffsplit<CR>", { desc = "Diff Split" }, { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>gv", "<cmd>DiffviewOpen<CR>", { desc = "Diffview" }, { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>gV", "<cmd>DiffviewFileHistory<CR>", { desc = "File History" }, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>gb", function()
+	vim.ui.input({ prompt = "Compare with branch: " }, function(branch)
+		if branch and branch ~= "" then
+			vim.cmd("DiffviewOpen " .. branch)
+		end
+	end)
+end, { desc = "Compare with branch..." }, { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>gq", "<cmd>DiffviewClose<CR>", { desc = "Close Diffview" }, { noremap = true, silent = true })
 vim.keymap.set(
 	"n",
