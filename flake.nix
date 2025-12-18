@@ -1,16 +1,11 @@
 {
-  description = "My own Neovim flake";
+  description = "Development environment with Neovim";
 
   inputs = {
-    nixpkgs = {
-      url = "github:NixOS/nixpkgs";
-    };
-    nixpkgs-unstable = {
-      url = "github:NixOS/nixpkgs/nixos-unstable";
-    };
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
   outputs =
@@ -19,93 +14,101 @@
       nixpkgs,
       nixpkgs-unstable,
       flake-utils,
+      rust-overlay,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgsUnstable = import nixpkgs-unstable {
           inherit system;
-          config = {
-            allowUnfree = true;
-          };
-        };
-        
-        overlayFlakeInputs = prev: final: {
-          neovim-unwrapped = pkgsUnstable.neovim-unwrapped;
-        };
-
-        overlayNeovim = prev: final: {
-          myNeovim = import ./packages/neovim {
-            pkgs = final;
-          };
+          config.allowUnfree = true;
         };
 
         pkgs = import nixpkgs {
           inherit system;
-          config = {
-            allowUnfree = true;
-          };
+          config.allowUnfree = true;
           overlays = [
-            overlayFlakeInputs
-            overlayNeovim
+            rust-overlay.overlays.default
+            (final: prev: { neovim-unwrapped = pkgsUnstable.neovim-unwrapped; })
+            (final: prev: { myNeovim = import ./packages/neovim { pkgs = final; }; })
           ];
         };
 
+        # Cross-compilation package sets
+        pkgsCrossAarch64Musl = pkgs.pkgsCross.aarch64-multiplatform-musl;
+        pkgsCrossMusl64 = pkgs.pkgsCross.musl64;
+
         deps = import ./packages/dependencies { inherit pkgs; };
 
-        # Create a zshrc that sets up environment variables
-        customZshrc = pkgs.writeText "zshrc" ''
-          # Set OpenSSL environment variables - this runs for every zsh instance
-          export OPENSSL_ROOT_DIR=${pkgs.openssl.dev}
-          export OPENSSL_LIBRARIES=${pkgs.openssl.out}/lib
-          export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-          export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${pkgs.openssl.dev}/lib/pkgconfig
-          
-          # Add host system libraries to search paths
-          export NIX_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$NIX_LIBRARY_PATH
-          export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-
-          # Source user's zshrc if it exists
-          if [[ -f ~/.zshrc ]]; then
-            source ~/.zshrc
-          fi
-        '';
-
-        myZsh = pkgs.symlinkJoin {
-          name = "zsh-with-dependencies";
-          paths = [ pkgs.zsh ];
-          buildInputs = [ pkgs.makeWrapper ];
-          postBuild = ''
-            wrapProgram $out/bin/zsh \
-              --prefix PATH : ${pkgs.lib.makeBinPath deps.packages} \
-              --add-flags "-i" \
-              --set ZDOTDIR ${
-                pkgs.stdenv.mkDerivation {
-                  name = "zsh-dotdir";
-                  phases = [ "installPhase" ];
-                  installPhase = ''
-                    mkdir -p $out
-                    cp ${customZshrc} $out/.zshrc
-                  '';
-                }
-              }
-          '';
+        # Rust toolchain with cross-compilation targets
+        rustToolchain = pkgs.rust-bin.stable.latest.default.override {
+          targets = [
+            "x86_64-unknown-linux-musl"
+            "aarch64-unknown-linux-musl"
+          ];
         };
+
+        # Common Rust packages for all shells
+        rustPackages = [
+          rustToolchain
+          pkgs.cargo-nextest
+          pkgs.rust-analyzer
+        ];
+
+        # OpenSSL setup helper
+        mkOpenSSLEnv = openssl: ''
+          export OPENSSL_DIR=${openssl.dev}
+          export OPENSSL_LIB_DIR=${openssl.out}/lib
+          export OPENSSL_INCLUDE_DIR=${openssl.dev}/include
+          export OPENSSL_STATIC=1
+          export PKG_CONFIG_PATH=${openssl.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
+        '';
       in
       {
         packages = {
           default = pkgs.myNeovim;
-          zsh = myZsh;
+          neovim = pkgs.myNeovim;
         };
-        apps = {
-          neovim = {
-            type = "app";
-            program = "${pkgs.myNeovim}/bin/nvim";
+
+        devShells = {
+          # Native x86_64 development (glibc, dynamic)
+          default = pkgs.mkShell {
+            packages = deps.packages ++ [ pkgs.myNeovim ] ++ rustPackages;
+            shellHook = deps.shellHook;
           };
-          zsh = {
-            type = "app";
-            program = "${myZsh}/bin/zsh";
+
+          # x86_64 musl static builds
+          x86_64-musl = pkgs.mkShell {
+            packages = rustPackages ++ [
+              pkgsCrossMusl64.stdenv.cc
+              pkgs.myNeovim
+            ];
+
+            CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+            CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER = "${pkgsCrossMusl64.stdenv.cc}/bin/x86_64-unknown-linux-musl-cc";
+            CC_x86_64_unknown_linux_musl = "${pkgsCrossMusl64.stdenv.cc}/bin/x86_64-unknown-linux-musl-cc";
+
+            shellHook = mkOpenSSLEnv pkgsCrossMusl64.pkgsStatic.openssl;
           };
+
+          # aarch64 musl static builds (cross-compilation)
+          aarch64-musl = pkgs.mkShell {
+            packages = rustPackages ++ [
+              pkgsCrossAarch64Musl.stdenv.cc
+              pkgs.myNeovim
+            ];
+
+            CARGO_BUILD_TARGET = "aarch64-unknown-linux-musl";
+            CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER = "${pkgsCrossAarch64Musl.stdenv.cc}/bin/aarch64-unknown-linux-musl-cc";
+            CC_aarch64_unknown_linux_musl = "${pkgsCrossAarch64Musl.stdenv.cc}/bin/aarch64-unknown-linux-musl-cc";
+
+            shellHook = mkOpenSSLEnv pkgsCrossAarch64Musl.pkgsStatic.openssl;
+          };
+        };
+
+        apps.default = {
+          type = "app";
+          program = "${pkgs.myNeovim}/bin/nvim";
         };
       }
     );
