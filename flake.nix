@@ -44,9 +44,16 @@
 
         # Rust toolchain with cross-compilation targets
         rustToolchain = pkgs.rust-bin.stable.latest.default.override {
+          extensions = [
+            "rust-src"
+            "rust-analyzer"
+            "rustfmt"
+            "clippy"
+          ];
           targets = [
             "x86_64-unknown-linux-musl"
             "aarch64-unknown-linux-musl"
+            "thumbv8m.main-none-eabihf"
           ];
         };
 
@@ -54,7 +61,6 @@
         rustPackages = [
           rustToolchain
           pkgs.cargo-nextest
-          pkgs.rust-analyzer
         ];
 
         # OpenSSL setup helper
