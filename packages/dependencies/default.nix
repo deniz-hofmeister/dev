@@ -48,6 +48,12 @@ let
     xmlformat
     zsh
     nodejs
+
+    # Embedded development / probe-rs ecosystem
+    probe-rs-tools
+    flip-link
+    usbutils
+
     nodePackages.svelte-language-server
     nodePackages.typescript-language-server
     nodePackages.vscode-langservers-extracted
