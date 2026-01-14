@@ -12,7 +12,6 @@ let
   packages = [
     binutils
     black
-    ccls
     clang-tools
     cmake
     cpptools
@@ -34,6 +33,7 @@ let
     pyright
     pythonWithDebugpy
     ripgrep
+    rust-analyzer
     spdlog
     stow
     stylua
@@ -45,6 +45,7 @@ let
     xdotool
     xorg.xhost
     xsel
+    xmlformat
     zsh
     nodejs
     nodePackages.svelte-language-server
