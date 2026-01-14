@@ -6,6 +6,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    opencode.url = "github:anomalyco/opencode";
   };
 
   outputs =
@@ -15,6 +16,7 @@
       nixpkgs-unstable,
       flake-utils,
       rust-overlay,
+      opencode,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -56,18 +58,37 @@
         ];
 
         # OpenSSL setup helper
-        mkOpenSSLEnv = openssl: ''
-          export OPENSSL_DIR=${openssl.dev}
-          export OPENSSL_LIB_DIR=${openssl.out}/lib
-          export OPENSSL_INCLUDE_DIR=${openssl.dev}/include
+        mkOpenSSLEnv = opensslPkg: ''
+          export OPENSSL_DIR=${opensslPkg.dev}
+          export OPENSSL_LIB_DIR=${opensslPkg.out}/lib
+          export OPENSSL_INCLUDE_DIR=${opensslPkg.dev}/include
           export OPENSSL_STATIC=1
-          export PKG_CONFIG_PATH=${openssl.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
+          export PKG_CONFIG_PATH=${opensslPkg.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
         '';
+
+        # Wrapped OpenCode with all LSPs and tools in PATH
+        opencode-with-lsps = pkgs.writeShellApplication {
+          name = "opencode";
+          runtimeInputs = deps.packages ++ rustPackages;
+          text = ''
+            # Environment variables for build tools
+            export OPENSSL_DIR=${pkgs.openssl.dev}
+            export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
+            export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
+            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
+            export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
+
+            exec ${opencode.packages.${system}.default}/bin/opencode "$@"
+          '';
+        };
       in
       {
         packages = {
           default = pkgs.myNeovim;
           neovim = pkgs.myNeovim;
+          opencode = opencode-with-lsps;
         };
 
         devShells = {
@@ -106,9 +127,15 @@
           };
         };
 
-        apps.default = {
-          type = "app";
-          program = "${pkgs.myNeovim}/bin/nvim";
+        apps = {
+          default = {
+            type = "app";
+            program = "${pkgs.myNeovim}/bin/nvim";
+          };
+          opencode = {
+            type = "app";
+            program = "${opencode-with-lsps}/bin/opencode";
+          };
         };
       }
     );
