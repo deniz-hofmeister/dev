@@ -127,6 +127,24 @@
             exec ${nix-ai-tools.packages.${system}.crush}/bin/crush "$@"
           '';
         };
+
+        # Wrapped Claude Code with all LSPs and tools in PATH
+        claude-with-deps = pkgs.writeShellApplication {
+          name = "claude";
+          runtimeInputs = deps.packages ++ rustPackages;
+          text = ''
+            # Environment variables for build tools
+            export OPENSSL_DIR=${pkgs.openssl.dev}
+            export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
+            export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
+            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
+            export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
+
+            exec ${pkgsUnstable.claude-code}/bin/claude "$@"
+          '';
+        };
       in
       {
         packages = {
@@ -134,6 +152,7 @@
           neovim = neovim-with-lsps;
           opencode = opencode-with-lsps;
           crush = crush-with-lsps;
+          claude = claude-with-deps;
         };
 
         devShells = {
@@ -184,6 +203,10 @@
           crush = {
             type = "app";
             program = "${crush-with-lsps}/bin/crush";
+          };
+          claude = {
+            type = "app";
+            program = "${claude-with-deps}/bin/claude";
           };
         };
       }
