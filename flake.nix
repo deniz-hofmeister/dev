@@ -7,6 +7,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
     opencode.url = "github:anomalyco/opencode";
+    nix-ai-tools.url = "github:numtide/nix-ai-tools";
   };
 
   outputs =
@@ -17,6 +18,7 @@
       flake-utils,
       rust-overlay,
       opencode,
+      nix-ai-tools,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -89,12 +91,31 @@
             exec ${opencode.packages.${system}.default}/bin/opencode "$@"
           '';
         };
+
+        # Wrapped crush with all LSPs and tools in PATH
+        crush-with-lsps = pkgs.writeShellApplication {
+          name = "crush";
+          runtimeInputs = deps.packages ++ rustPackages;
+          text = ''
+            # Environment variables for build tools
+            export OPENSSL_DIR=${pkgs.openssl.dev}
+            export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
+            export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
+            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
+            export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
+
+            exec ${nix-ai-tools.packages.${system}.crush}/bin/crush "$@"
+          '';
+        };
       in
       {
         packages = {
           default = pkgs.myNeovim;
           neovim = pkgs.myNeovim;
           opencode = opencode-with-lsps;
+          crush = crush-with-lsps;
         };
 
         devShells = {
@@ -141,6 +162,10 @@
           opencode = {
             type = "app";
             program = "${opencode-with-lsps}/bin/opencode";
+          };
+          crush = {
+            type = "app";
+            program = "${crush-with-lsps}/bin/crush";
           };
         };
       }
