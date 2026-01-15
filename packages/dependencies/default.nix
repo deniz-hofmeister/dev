@@ -24,7 +24,7 @@ let
     gnumake
     isort
     lldb
-    nixfmt-rfc-style
+    nixfmt
     openssl
     openssl.dev
     pkg-config

@@ -74,6 +74,24 @@
           export PKG_CONFIG_PATH=${opensslPkg.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
         '';
 
+        # Wrapped Neovim with all LSPs and tools in PATH
+        neovim-with-lsps = pkgs.writeShellApplication {
+          name = "nvim";
+          runtimeInputs = deps.packages ++ rustPackages ++ [ pkgs.myNeovim ];
+          text = ''
+            # Environment variables for build tools
+            export OPENSSL_DIR=${pkgs.openssl.dev}
+            export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
+            export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
+            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
+            export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
+
+            exec ${pkgs.myNeovim}/bin/nvim "$@"
+          '';
+        };
+
         # Wrapped OpenCode with all LSPs and tools in PATH
         opencode-with-lsps = pkgs.writeShellApplication {
           name = "opencode";
@@ -112,8 +130,8 @@
       in
       {
         packages = {
-          default = pkgs.myNeovim;
-          neovim = pkgs.myNeovim;
+          default = neovim-with-lsps;
+          neovim = neovim-with-lsps;
           opencode = opencode-with-lsps;
           crush = crush-with-lsps;
         };
@@ -157,7 +175,7 @@
         apps = {
           default = {
             type = "app";
-            program = "${pkgs.myNeovim}/bin/nvim";
+            program = "${neovim-with-lsps}/bin/nvim";
           };
           opencode = {
             type = "app";
