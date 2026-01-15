@@ -51,6 +51,8 @@ let
 
     # Embedded development / probe-rs ecosystem
     probe-rs-tools
+    elf2uf2-rs
+    picotool
     flip-link
     usbutils
 
