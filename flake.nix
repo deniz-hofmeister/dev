@@ -142,7 +142,7 @@
             export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
             export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
 
-            exec ${pkgsUnstable.claude-code}/bin/claude "$@"
+            exec ${pkgs.claude-code}/bin/claude "$@"
           '';
         };
       in
