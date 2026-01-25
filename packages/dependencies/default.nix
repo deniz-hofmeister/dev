@@ -19,6 +19,7 @@ let
     fmt
     fzf
     gcc
+    jq
     gdb
     glibc
     gnumake
