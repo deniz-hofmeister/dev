@@ -51,11 +51,17 @@
             "rust-analyzer"
             "rustfmt"
             "clippy"
+            "llvm-tools-preview"
           ];
           targets = [
             "x86_64-unknown-linux-musl"
             "aarch64-unknown-linux-musl"
-            "thumbv8m.main-none-eabihf"
+            # Embedded ARM Cortex-M targets
+            "thumbv6m-none-eabi" # Cortex-M0/M0+
+            "thumbv7m-none-eabi" # Cortex-M3
+            "thumbv7em-none-eabi" # Cortex-M4/M7 (soft float)
+            "thumbv7em-none-eabihf" # Cortex-M4F/M7F (hard float) - STM32F4/F7/H7
+            "thumbv8m.main-none-eabihf" # Cortex-M33/M55
           ];
         };
 
