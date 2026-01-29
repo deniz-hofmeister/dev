@@ -56,6 +56,7 @@ let
     picotool
     flip-link
     usbutils
+    stlink
 
     nodePackages.svelte-language-server
     nodePackages.typescript-language-server
