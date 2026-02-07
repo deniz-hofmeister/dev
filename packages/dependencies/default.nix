@@ -58,6 +58,15 @@ let
     usbutils
     stlink
 
+    # Web development (Leptos/WASM)
+    cargo-leptos
+    wasm-bindgen-cli
+    trunk
+    binaryen
+
+    # Audio libraries
+    alsa-lib
+
     nodePackages.svelte-language-server
     nodePackages.typescript-language-server
     nodePackages.vscode-langservers-extracted
@@ -68,8 +77,8 @@ let
     export OPENSSL_DIR=${openssl.dev}
     export OPENSSL_LIB_DIR=${openssl.out}/lib
     export OPENSSL_INCLUDE_DIR=${openssl.dev}/include
-    export PKG_CONFIG_PATH=${openssl.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
-    export LD_LIBRARY_PATH=${spdlog}/lib:$LD_LIBRARY_PATH
+    export PKG_CONFIG_PATH=${openssl.dev}/lib/pkgconfig:${alsa-lib.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
+    export LD_LIBRARY_PATH=${spdlog}/lib:${alsa-lib}/lib:$LD_LIBRARY_PATH
     export spdlog_DIR=${spdlog.dev}/lib/cmake/spdlog
     export fmt_DIR=${fmt.dev}/lib/cmake/fmt
   '';

@@ -62,6 +62,8 @@
             "thumbv7em-none-eabi" # Cortex-M4/M7 (soft float)
             "thumbv7em-none-eabihf" # Cortex-M4F/M7F (hard float) - STM32F4/F7/H7
             "thumbv8m.main-none-eabihf" # Cortex-M33/M55
+            # WebAssembly target
+            "wasm32-unknown-unknown" # WASM for web apps (Leptos, Yew, etc.)
           ];
         };
 
