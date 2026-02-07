@@ -44,7 +44,7 @@ let
     vscode-extensions.ms-vscode.cpptools
     xclip
     xdotool
-    xorg.xhost
+    xhost
     xsel
     xmlformat
     zsh

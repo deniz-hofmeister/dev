@@ -6,7 +6,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    opencode.url = "github:anomalyco/opencode";
+    opencode.url = "github:anomalyco/opencode/v1.1.53";
     nix-ai-tools.url = "github:numtide/nix-ai-tools";
   };
 
