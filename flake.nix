@@ -73,6 +73,8 @@
           pkgs.cargo-nextest
         ];
 
+        commonShellPackages = deps.packages ++ [ pkgs.myNeovim ] ++ rustPackages;
+
         # OpenSSL setup helper
         mkOpenSSLEnv = opensslPkg: ''
           export OPENSSL_DIR=${opensslPkg.dev}
@@ -328,8 +330,11 @@
             export OPENSSL_DIR=${pkgs.openssl.dev}
             export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
             export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
-            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export PKG_CONFIG_PATH=${deps.pkgConfigPath}:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${deps.runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}
+            export ALSA_CONFIG_DIR=${deps.alsaConfigDir}
+            export ALSA_CONFIG_PATH=${deps.alsaConfigPath}
+            export ALSA_PLUGIN_DIR=${deps.alsaPluginDir}
             export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
             export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
 
@@ -346,8 +351,11 @@
             export OPENSSL_DIR=${pkgs.openssl.dev}
             export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
             export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
-            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export PKG_CONFIG_PATH=${deps.pkgConfigPath}:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${deps.runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}
+            export ALSA_CONFIG_DIR=${deps.alsaConfigDir}
+            export ALSA_CONFIG_PATH=${deps.alsaConfigPath}
+            export ALSA_PLUGIN_DIR=${deps.alsaPluginDir}
             export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
             export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
 
@@ -371,8 +379,11 @@
             export OPENSSL_DIR=${pkgs.openssl.dev}
             export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
             export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
-            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export PKG_CONFIG_PATH=${deps.pkgConfigPath}:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${deps.runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}
+            export ALSA_CONFIG_DIR=${deps.alsaConfigDir}
+            export ALSA_CONFIG_PATH=${deps.alsaConfigPath}
+            export ALSA_PLUGIN_DIR=${deps.alsaPluginDir}
             export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
             export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
 
@@ -389,8 +400,11 @@
             export OPENSSL_DIR=${pkgs.openssl.dev}
             export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
             export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-            export PKG_CONFIG_PATH=${pkgs.openssl.dev}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}
-            export LD_LIBRARY_PATH=${pkgs.spdlog}/lib:''${LD_LIBRARY_PATH:-}
+            export PKG_CONFIG_PATH=${deps.pkgConfigPath}:''${PKG_CONFIG_PATH:-}
+            export LD_LIBRARY_PATH=${deps.runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}
+            export ALSA_CONFIG_DIR=${deps.alsaConfigDir}
+            export ALSA_CONFIG_PATH=${deps.alsaConfigPath}
+            export ALSA_PLUGIN_DIR=${deps.alsaPluginDir}
             export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
             export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
 
@@ -410,15 +424,14 @@
         devShells = {
           # Native x86_64 development (glibc, dynamic)
           default = pkgs.mkShell {
-            packages = deps.packages ++ [ pkgs.myNeovim ] ++ rustPackages;
+            packages = commonShellPackages;
             shellHook = deps.shellHook;
           };
 
           # x86_64 musl static builds
           x86_64-musl = pkgs.mkShell {
-            packages = rustPackages ++ [
+            packages = commonShellPackages ++ [
               pkgsCrossMusl64.stdenv.cc
-              pkgs.myNeovim
             ];
 
             CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
@@ -430,9 +443,8 @@
 
           # aarch64 musl static builds (cross-compilation)
           aarch64-musl = pkgs.mkShell {
-            packages = rustPackages ++ [
+            packages = commonShellPackages ++ [
               pkgsCrossAarch64Musl.stdenv.cc
-              pkgs.myNeovim
             ];
 
             CARGO_BUILD_TARGET = "aarch64-unknown-linux-musl";
