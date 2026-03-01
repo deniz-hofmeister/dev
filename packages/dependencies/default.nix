@@ -13,13 +13,19 @@ let
       debugpy
       lxml
       numpy
+      odfpy
       opencv4
+      openpyxl
+      pandas
       pdfplumber
       pillow
+      pyxlsb
       pypdf
       pytesseract
       pyyaml
       requests
+      xlrd
+      xlsxwriter
     ]
   );
 
@@ -61,8 +67,12 @@ let
     prettierd
     pyright
     pythonWithTools
+    csvkit
     tesseract
     poppler-utils
+    gnumeric
+    libreoffice
+    onlyoffice-desktopeditors
     ripgrep
     rust-analyzer
     spdlog
