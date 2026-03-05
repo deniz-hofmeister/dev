@@ -1,17 +1,15 @@
 { pkgs }:
 with pkgs.vimPlugins;
 [
-  (nvim-treesitter.withPlugins (
-    plugins: with plugins; [
-      c
-      cpp
-      javascript
-      python
-      svelte
-      typescript
-      xml
-    ]
-  ))
+  (nvim-treesitter.withPlugins (plugins: with plugins; [ 
+    c
+    cpp
+    javascript
+    python
+    svelte
+    typescript
+    xml
+  ]))
   catppuccin-nvim
   cmp-buffer
   cmp-cmdline
@@ -36,7 +34,6 @@ with pkgs.vimPlugins;
   nvim-lspconfig
   nvim-web-devicons
   oil-nvim
-  opencode-nvim
   rustaceanvim
   telescope-fzf-native-nvim
   telescope-nvim
