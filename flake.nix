@@ -324,7 +324,13 @@
         # Wrapped Neovim with all LSPs and tools in PATH
         neovim-with-lsps = pkgs.writeShellApplication {
           name = "nvim";
-          runtimeInputs = deps.packages ++ rustPackages ++ [ pkgs.myNeovim ];
+          runtimeInputs =
+            deps.packages
+            ++ rustPackages
+            ++ [
+              pkgs.myNeovim
+              opencode.packages.${system}.default
+            ];
           text = ''
             # Environment variables for build tools
             export OPENSSL_DIR=${pkgs.openssl.dev}
