@@ -71,7 +71,6 @@ let
     tesseract
     poppler-utils
     gnumeric
-    libreoffice
     onlyoffice-desktopeditors
     ripgrep
     rust-analyzer
