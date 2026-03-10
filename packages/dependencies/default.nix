@@ -86,6 +86,8 @@ let
     xhost
     xsel
     xmlformat
+    awscli2
+    terraform
     zsh
     nodejs
 
