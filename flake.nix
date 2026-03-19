@@ -370,12 +370,13 @@
             export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
             export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
 
-            THEME_DIR="''${XDG_CONFIG_HOME:-$HOME/.config}/opencode/themes"
+            CONFIG_DIR="''${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
+            THEME_DIR="$CONFIG_DIR/themes"
             mkdir -p "$THEME_DIR"
             install -m 0644 ${opencodeThemeFile} "$THEME_DIR/catppuccin-macchiato-transparent.json"
 
             OPENCODE_THEME="''${OPENCODE_THEME:-catppuccin-macchiato-transparent}"
-            export OPENCODE_CONFIG_CONTENT="{\"theme\":\"$OPENCODE_THEME\"}"
+            printf '{"$schema":"https://opencode.ai/tui.json","theme":"%s"}\n' "$OPENCODE_THEME" > "$CONFIG_DIR/tui.json"
 
             exec ${opencodePackage}/bin/opencode "$@"
           '';
