@@ -372,8 +372,13 @@
 
             CONFIG_DIR="''${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
             THEME_DIR="$CONFIG_DIR/themes"
+            CONFIG_FILE="$CONFIG_DIR/opencode.json"
             mkdir -p "$THEME_DIR"
             install -m 0644 ${opencodeThemeFile} "$THEME_DIR/catppuccin-macchiato-transparent.json"
+
+            if [ ! -f "$CONFIG_FILE" ]; then
+              printf '{"$schema":"https://opencode.ai/config.json","permission":"allow"}\n' > "$CONFIG_FILE"
+            fi
 
             OPENCODE_THEME="''${OPENCODE_THEME:-catppuccin-macchiato-transparent}"
             printf '{"theme":"%s"}\n' "$OPENCODE_THEME" > "$CONFIG_DIR/tui.json"
