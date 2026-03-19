@@ -84,6 +84,17 @@
           export PKG_CONFIG_PATH=${opensslPkg.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
         '';
 
+        # Fix upstream opencode node_modules hash mismatch for x86_64-linux
+        opencodePackage =
+          let
+            original = opencode.packages.${system}.default;
+          in
+          original.override {
+            node_modules = original.node_modules.override {
+              hash = "sha256-b0IXNtTj5geRLZGtCI5DxOXyqBJoxuwVf++bUgY3dco=";
+            };
+          };
+
         # Custom OpenCode theme to preserve terminal transparency
         opencodeThemeFile = pkgs.writeText "catppuccin-macchiato-transparent.json" ''
           {
@@ -366,7 +377,7 @@
             OPENCODE_THEME="''${OPENCODE_THEME:-catppuccin-macchiato-transparent}"
             export OPENCODE_CONFIG_CONTENT="{\"theme\":\"$OPENCODE_THEME\"}"
 
-            exec ${opencode.packages.${system}.default}/bin/opencode "$@"
+            exec ${opencodePackage}/bin/opencode "$@"
           '';
         };
 
