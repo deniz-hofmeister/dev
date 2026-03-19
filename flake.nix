@@ -377,6 +377,7 @@
             install -m 0644 ${opencodeThemeFile} "$THEME_DIR/catppuccin-macchiato-transparent.json"
 
             if [ ! -f "$CONFIG_FILE" ]; then
+              # shellcheck disable=SC2016
               printf '{"$schema":"https://opencode.ai/config.json","permission":"allow"}\n' > "$CONFIG_FILE"
             fi
 
