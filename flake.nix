@@ -378,11 +378,15 @@
 
             if [ ! -f "$CONFIG_FILE" ]; then
               # shellcheck disable=SC2016
-              printf '%s\n' '{"$schema":"https://opencode.ai/config.json","permission":"allow","mcp":{"context7":{"type":"remote","url":"https://mcp.context7.com/mcp","headers":{"CONTEXT7_API_KEY":"{env:CONTEXT7_API_KEY}"}}}}' > "$CONFIG_FILE"
+              printf '%s\n' '{"$schema":"https://opencode.ai/config.json","model":"openai/gpt-5.4","agent":{"build":{"model":"openai/gpt-5.4"}},"permission":"allow","mcp":{"context7":{"type":"remote","url":"https://mcp.context7.com/mcp","headers":{"CONTEXT7_API_KEY":"{env:CONTEXT7_API_KEY}"}}}}' > "$CONFIG_FILE"
             else
               tmp_config="$(mktemp)"
               jq '
                 ."$schema" //= "https://opencode.ai/config.json"
+                | .model = "openai/gpt-5.4"
+                | .agent //= {}
+                | .agent.build //= {}
+                | .agent.build.model = "openai/gpt-5.4"
                 | .permission //= "allow"
                 | .mcp //= {}
                 | .mcp.context7 //= {}
