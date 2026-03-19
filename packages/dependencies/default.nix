@@ -44,12 +44,15 @@ let
   pkgConfigPath = "${openssl.dev}/lib/pkgconfig:${alsa-lib.dev}/lib/pkgconfig";
 
   packages = [
+    bash-language-server
     binutils
     black
     clang-tools
     cmake
+    cmake-language-server
     cpptools
     curl
+    dockerfile-language-server
     fmt
     fzf
     gcc
@@ -58,7 +61,9 @@ let
     glibc
     gnumake
     isort
+    lemminx
     lldb
+    marksman
     nixfmt
     openssl
     openssl.dev
@@ -86,6 +91,7 @@ let
     xhost
     xsel
     xmlformat
+    yaml-language-server
     awscli2
     terraform
     zsh
