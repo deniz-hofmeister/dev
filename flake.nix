@@ -376,7 +376,7 @@
             install -m 0644 ${opencodeThemeFile} "$THEME_DIR/catppuccin-macchiato-transparent.json"
 
             OPENCODE_THEME="''${OPENCODE_THEME:-catppuccin-macchiato-transparent}"
-            printf '{"$schema":"https://opencode.ai/tui.json","theme":"%s"}\n' "$OPENCODE_THEME" > "$CONFIG_DIR/tui.json"
+            printf '{"theme":"%s"}\n' "$OPENCODE_THEME" > "$CONFIG_DIR/tui.json"
 
             exec ${opencodePackage}/bin/opencode "$@"
           '';
