@@ -47,6 +47,7 @@ let
     bash-language-server
     binutils
     black
+    bun
     clang-tools
     cmake
     cmake-language-server

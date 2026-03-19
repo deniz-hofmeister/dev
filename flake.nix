@@ -378,7 +378,21 @@
 
             if [ ! -f "$CONFIG_FILE" ]; then
               # shellcheck disable=SC2016
-              printf '{"$schema":"https://opencode.ai/config.json","permission":"allow"}\n' > "$CONFIG_FILE"
+              printf '%s\n' '{"$schema":"https://opencode.ai/config.json","permission":"allow","plugin":["oh-my-opencode"],"mcp":{"context7":{"type":"remote","url":"https://mcp.context7.com/mcp","headers":{"CONTEXT7_API_KEY":"{env:CONTEXT7_API_KEY}"}}}}' > "$CONFIG_FILE"
+            else
+              tmp_config="$(mktemp)"
+              jq '
+                ."$schema" //= "https://opencode.ai/config.json"
+                | .permission //= "allow"
+                | .mcp //= {}
+                | .mcp.context7 //= {}
+                | .mcp.context7.type //= "remote"
+                | .mcp.context7.url //= "https://mcp.context7.com/mcp"
+                | .mcp.context7.headers //= {}
+                | .mcp.context7.headers.CONTEXT7_API_KEY //= "{env:CONTEXT7_API_KEY}"
+                | .plugin = (((if (.plugin | type) == "array" then .plugin else [] end) + ["oh-my-opencode"]) | unique)
+              ' "$CONFIG_FILE" > "$tmp_config"
+              mv "$tmp_config" "$CONFIG_FILE"
             fi
 
             OPENCODE_THEME="''${OPENCODE_THEME:-catppuccin-macchiato-transparent}"
