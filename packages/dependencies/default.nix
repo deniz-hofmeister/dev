@@ -12,6 +12,7 @@ let
       beautifulsoup4
       debugpy
       lxml
+      matplotlib
       numpy
       odfpy
       opencv4
@@ -19,11 +20,13 @@ let
       pandas
       pdfplumber
       pillow
+      pip
       pyxlsb
       pypdf
       pytesseract
       pyyaml
       requests
+      scipy
       xlrd
       xlsxwriter
     ]
