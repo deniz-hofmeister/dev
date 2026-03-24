@@ -7,7 +7,7 @@ let
     chmod +x $out/bin/*
   '';
 
-  pythonWithTools = python3.withPackages (
+  pythonWithTools = python312.withPackages (
     ps: with ps; [
       beautifulsoup4
       debugpy
@@ -75,7 +75,9 @@ let
     podman-compose
     prettierd
     pyright
+    ruff
     pythonWithTools
+    uv
     csvkit
     tesseract
     poppler-utils
