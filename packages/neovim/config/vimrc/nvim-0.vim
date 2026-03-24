@@ -5,6 +5,8 @@ set relativenumber
 set shiftwidth=2
 set noshowmode
 set hlsearch
+set ignorecase
+set smartcase
 hi Normal guibg=NONE ctermbg=NONE
 hi NormalNC guibg=NONE ctermbg=NONE
 hi NvimTreeNormal guibg=NONE ctermbg=NONE
