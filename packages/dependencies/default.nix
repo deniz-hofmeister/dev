@@ -11,6 +11,7 @@ let
     ps: with ps; [
       beautifulsoup4
       debugpy
+      httpx
       lxml
       matplotlib
       numpy
@@ -21,6 +22,8 @@ let
       pdfplumber
       pillow
       pip
+      pydantic
+      pytest
       pyxlsb
       pypdf
       pytesseract
