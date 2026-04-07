@@ -125,10 +125,10 @@ let
     alsa-plugins
     pipewire
 
-    nodePackages.svelte-language-server
-    nodePackages.typescript-language-server
-    nodePackages.vscode-langservers-extracted
-    nodePackages.typescript
+    svelte-language-server
+    typescript-language-server
+    vscode-langservers-extracted
+    typescript
   ];
 
   shellHook = ''

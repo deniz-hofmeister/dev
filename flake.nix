@@ -91,7 +91,7 @@
           in
           original.override {
             node_modules = original.node_modules.override {
-              hash = "sha256-b0IXNtTj5geRLZGtCI5DxOXyqBJoxuwVf++bUgY3dco=";
+              hash = "sha256-r1+AehuOGIOaaxfXkQGracT/6OdFRn5Ub8s7H+MeKFY=";
             };
           };
 
