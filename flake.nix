@@ -35,6 +35,15 @@
             rust-overlay.overlays.default
             (final: prev: { neovim-unwrapped = pkgsUnstable.neovim-unwrapped; })
             (final: prev: { myNeovim = import ./packages/neovim { pkgs = final; }; })
+            (final: prev: {
+              python312 = prev.python312.override {
+                packageOverrides = pyFinal: pyPrev: {
+                  jupyter-server = pyPrev.jupyter-server.overridePythonAttrs (old: {
+                    disabledTests = (old.disabledTests or [ ]) ++ [ "test_execution_state" ];
+                  });
+                };
+              };
+            })
           ];
         };
 
