@@ -6,8 +6,6 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    opencode.url = "github:anomalyco/opencode";
-    nix-ai-tools.url = "github:numtide/nix-ai-tools";
   };
 
   outputs =
@@ -17,8 +15,6 @@
       nixpkgs-unstable,
       flake-utils,
       rust-overlay,
-      opencode,
-      nix-ai-tools,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -93,245 +89,6 @@
           export PKG_CONFIG_PATH=${opensslPkg.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
         '';
 
-        opencodePackage = opencode.packages.${system}.default;
-
-        # Custom OpenCode theme to preserve terminal transparency
-        opencodeThemeFile = pkgs.writeText "catppuccin-macchiato-transparent.json" ''
-          {
-            "$schema": "https://opencode.ai/theme.json",
-            "defs": {
-              "macRosewater": "#f4dbd6",
-              "macFlamingo": "#f0c6c6",
-              "macPink": "#f5bde6",
-              "macMauve": "#c6a0f6",
-              "macRed": "#ed8796",
-              "macMaroon": "#ee99a0",
-              "macPeach": "#f5a97f",
-              "macYellow": "#eed49f",
-              "macGreen": "#a6da95",
-              "macTeal": "#8bd5ca",
-              "macSky": "#91d7e3",
-              "macSapphire": "#7dc4e4",
-              "macBlue": "#8aadf4",
-              "macLavender": "#b7bdf8",
-              "macText": "#cad3f5",
-              "macSubtext1": "#b8c0e0",
-              "macSubtext0": "#a5adcb",
-              "macOverlay2": "#939ab7",
-              "macOverlay1": "#8087a2",
-              "macOverlay0": "#6e738d",
-              "macSurface2": "#5b6078",
-              "macSurface1": "#494d64",
-              "macSurface0": "#363a4f",
-              "macBase": "#24273a",
-              "macMantle": "#1e2030",
-              "macCrust": "#181926"
-            },
-            "theme": {
-              "primary": {
-                "dark": "macBlue",
-                "light": "macBlue"
-              },
-              "secondary": {
-                "dark": "macMauve",
-                "light": "macMauve"
-              },
-              "accent": {
-                "dark": "macPink",
-                "light": "macPink"
-              },
-              "error": {
-                "dark": "macRed",
-                "light": "macRed"
-              },
-              "warning": {
-                "dark": "macYellow",
-                "light": "macYellow"
-              },
-              "success": {
-                "dark": "macGreen",
-                "light": "macGreen"
-              },
-              "info": {
-                "dark": "macTeal",
-                "light": "macTeal"
-              },
-              "text": {
-                "dark": "macText",
-                "light": "macText"
-              },
-              "textMuted": {
-                "dark": "macSubtext1",
-                "light": "macSubtext1"
-              },
-              "background": {
-                "dark": "none",
-                "light": "none"
-              },
-              "backgroundPanel": {
-                "dark": "none",
-                "light": "none"
-              },
-              "backgroundElement": {
-                "dark": "none",
-                "light": "none"
-              },
-              "border": {
-                "dark": "macSurface0",
-                "light": "macSurface0"
-              },
-              "borderActive": {
-                "dark": "macSurface1",
-                "light": "macSurface1"
-              },
-              "borderSubtle": {
-                "dark": "macSurface2",
-                "light": "macSurface2"
-              },
-              "diffAdded": {
-                "dark": "macGreen",
-                "light": "macGreen"
-              },
-              "diffRemoved": {
-                "dark": "macRed",
-                "light": "macRed"
-              },
-              "diffContext": {
-                "dark": "macOverlay2",
-                "light": "macOverlay2"
-              },
-              "diffHunkHeader": {
-                "dark": "macPeach",
-                "light": "macPeach"
-              },
-              "diffHighlightAdded": {
-                "dark": "macGreen",
-                "light": "macGreen"
-              },
-              "diffHighlightRemoved": {
-                "dark": "macRed",
-                "light": "macRed"
-              },
-              "diffAddedBg": {
-                "dark": "#29342b",
-                "light": "#29342b"
-              },
-              "diffRemovedBg": {
-                "dark": "#3a2a31",
-                "light": "#3a2a31"
-              },
-              "diffContextBg": {
-                "dark": "macMantle",
-                "light": "macMantle"
-              },
-              "diffLineNumber": {
-                "dark": "macSurface1",
-                "light": "macSurface1"
-              },
-              "diffAddedLineNumberBg": {
-                "dark": "#223025",
-                "light": "#223025"
-              },
-              "diffRemovedLineNumberBg": {
-                "dark": "#2f242b",
-                "light": "#2f242b"
-              },
-              "markdownText": {
-                "dark": "macText",
-                "light": "macText"
-              },
-              "markdownHeading": {
-                "dark": "macMauve",
-                "light": "macMauve"
-              },
-              "markdownLink": {
-                "dark": "macBlue",
-                "light": "macBlue"
-              },
-              "markdownLinkText": {
-                "dark": "macSky",
-                "light": "macSky"
-              },
-              "markdownCode": {
-                "dark": "macGreen",
-                "light": "macGreen"
-              },
-              "markdownBlockQuote": {
-                "dark": "macYellow",
-                "light": "macYellow"
-              },
-              "markdownEmph": {
-                "dark": "macYellow",
-                "light": "macYellow"
-              },
-              "markdownStrong": {
-                "dark": "macPeach",
-                "light": "macPeach"
-              },
-              "markdownHorizontalRule": {
-                "dark": "macSubtext0",
-                "light": "macSubtext0"
-              },
-              "markdownListItem": {
-                "dark": "macBlue",
-                "light": "macBlue"
-              },
-              "markdownListEnumeration": {
-                "dark": "macSky",
-                "light": "macSky"
-              },
-              "markdownImage": {
-                "dark": "macBlue",
-                "light": "macBlue"
-              },
-              "markdownImageText": {
-                "dark": "macSky",
-                "light": "macSky"
-              },
-              "markdownCodeBlock": {
-                "dark": "macText",
-                "light": "macText"
-              },
-              "syntaxComment": {
-                "dark": "macOverlay2",
-                "light": "macOverlay2"
-              },
-              "syntaxKeyword": {
-                "dark": "macMauve",
-                "light": "macMauve"
-              },
-              "syntaxFunction": {
-                "dark": "macBlue",
-                "light": "macBlue"
-              },
-              "syntaxVariable": {
-                "dark": "macRed",
-                "light": "macRed"
-              },
-              "syntaxString": {
-                "dark": "macGreen",
-                "light": "macGreen"
-              },
-              "syntaxNumber": {
-                "dark": "macPeach",
-                "light": "macPeach"
-              },
-              "syntaxType": {
-                "dark": "macYellow",
-                "light": "macYellow"
-              },
-              "syntaxOperator": {
-                "dark": "macSky",
-                "light": "macSky"
-              },
-              "syntaxPunctuation": {
-                "dark": "macText",
-                "light": "macText"
-              }
-            }
-          }
-        '';
-
         # Wrapped Neovim with all LSPs and tools in PATH
         neovim-with-lsps = pkgs.writeShellApplication {
           name = "nvim";
@@ -350,79 +107,6 @@
             export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
 
             exec ${pkgs.myNeovim}/bin/nvim "$@"
-          '';
-        };
-
-        # Wrapped OpenCode with all LSPs and tools in PATH
-        opencode-with-lsps = pkgs.writeShellApplication {
-          name = "opencode";
-          runtimeInputs = deps.packages ++ rustPackages;
-          text = ''
-            # Environment variables for build tools
-            export OPENSSL_DIR=${pkgs.openssl.dev}
-            export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
-            export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-            export PKG_CONFIG_PATH=${deps.pkgConfigPath}:''${PKG_CONFIG_PATH:-}
-            export LD_LIBRARY_PATH=${deps.runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}
-            export ALSA_CONFIG_DIR=${deps.alsaConfigDir}
-            export ALSA_CONFIG_PATH=${deps.alsaConfigPath}
-            export ALSA_PLUGIN_DIR=${deps.alsaPluginDir}
-            export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
-            export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
-
-            CONFIG_DIR="''${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
-            THEME_DIR="$CONFIG_DIR/themes"
-            CONFIG_FILE="$CONFIG_DIR/opencode.json"
-            mkdir -p "$THEME_DIR"
-            install -m 0644 ${opencodeThemeFile} "$THEME_DIR/catppuccin-macchiato-transparent.json"
-
-            if [ ! -f "$CONFIG_FILE" ]; then
-              # shellcheck disable=SC2016
-              printf '%s\n' '{"$schema":"https://opencode.ai/config.json","model":"openai/gpt-5.4","agent":{"build":{"model":"openai/gpt-5.4"}},"permission":"allow","mcp":{"context7":{"type":"remote","url":"https://mcp.context7.com/mcp/oauth"}}}' > "$CONFIG_FILE"
-            else
-              tmp_config="$(mktemp)"
-              jq '
-                ."$schema" //= "https://opencode.ai/config.json"
-                | .model = "openai/gpt-5.4"
-                | .agent //= {}
-                | .agent.build //= {}
-                | .agent.build.model = "openai/gpt-5.4"
-                | .permission //= "allow"
-                | .mcp //= {}
-                | .mcp.context7 //= {}
-                | .mcp.context7.type = "remote"
-                | .mcp.context7.url = "https://mcp.context7.com/mcp/oauth"
-                | del(.mcp.context7.headers)
-                | if .plugin then .plugin |= map(select(. != "oh-my-opencode")) else . end
-              ' "$CONFIG_FILE" > "$tmp_config"
-              mv "$tmp_config" "$CONFIG_FILE"
-            fi
-
-            OPENCODE_THEME="''${OPENCODE_THEME:-catppuccin-macchiato-transparent}"
-            printf '{"theme":"%s"}\n' "$OPENCODE_THEME" > "$CONFIG_DIR/tui.json"
-
-            exec ${opencodePackage}/bin/opencode "$@"
-          '';
-        };
-
-        # Wrapped crush with all LSPs and tools in PATH
-        crush-with-lsps = pkgs.writeShellApplication {
-          name = "crush";
-          runtimeInputs = deps.packages ++ rustPackages;
-          text = ''
-            # Environment variables for build tools
-            export OPENSSL_DIR=${pkgs.openssl.dev}
-            export OPENSSL_LIB_DIR=${pkgs.openssl.out}/lib
-            export OPENSSL_INCLUDE_DIR=${pkgs.openssl.dev}/include
-            export PKG_CONFIG_PATH=${deps.pkgConfigPath}:''${PKG_CONFIG_PATH:-}
-            export LD_LIBRARY_PATH=${deps.runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}
-            export ALSA_CONFIG_DIR=${deps.alsaConfigDir}
-            export ALSA_CONFIG_PATH=${deps.alsaConfigPath}
-            export ALSA_PLUGIN_DIR=${deps.alsaPluginDir}
-            export spdlog_DIR=${pkgs.spdlog.dev}/lib/cmake/spdlog
-            export fmt_DIR=${pkgs.fmt.dev}/lib/cmake/fmt
-
-            exec ${nix-ai-tools.packages.${system}.crush}/bin/crush "$@"
           '';
         };
 
@@ -451,8 +135,6 @@
         packages = {
           default = neovim-with-lsps;
           neovim = neovim-with-lsps;
-          opencode = opencode-with-lsps;
-          crush = crush-with-lsps;
           claude = claude-with-deps;
         };
 
@@ -494,14 +176,6 @@
           default = {
             type = "app";
             program = "${neovim-with-lsps}/bin/nvim";
-          };
-          opencode = {
-            type = "app";
-            program = "${opencode-with-lsps}/bin/opencode";
-          };
-          crush = {
-            type = "app";
-            program = "${crush-with-lsps}/bin/crush";
           };
           claude = {
             type = "app";
