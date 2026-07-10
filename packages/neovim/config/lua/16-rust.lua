@@ -55,3 +55,19 @@ vim.api.nvim_create_autocmd("FileType", {
 		map("<leader>rm", "expandMacro", "Expand Macro")
 	end,
 })
+
+-- Cargo.toml: interactive crates.nvim popups (no code-action equivalent)
+vim.api.nvim_create_autocmd("BufRead", {
+	group = vim.api.nvim_create_augroup("crates_keymaps", {}),
+	pattern = "Cargo.toml",
+	callback = function(ev)
+		local crates = require("crates")
+		local function map(lhs, fn, desc)
+			vim.keymap.set("n", lhs, fn, { buffer = ev.buf, desc = desc })
+		end
+		map("<leader>rv", crates.show_versions_popup, "Crate Versions")
+		map("<leader>rf", crates.show_features_popup, "Crate Features")
+		map("<leader>ru", crates.update_crate, "Update Crate (compatible)")
+		map("<leader>rU", crates.upgrade_crate, "Upgrade Crate (latest)")
+	end,
+})

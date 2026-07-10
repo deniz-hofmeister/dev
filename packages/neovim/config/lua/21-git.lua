@@ -55,3 +55,23 @@ end, "Next Hunk")
 hunk_map("ghp", function()
 	gitsigns.nav_hunk("prev", nil, gitsigns.preview_hunk_inline)
 end, "Previous Hunk")
+
+-- Staging (stage_hunk on an already-staged hunk un-stages it)
+hunk_map("<leader>ghs", gitsigns.stage_hunk, "Stage/Unstage Hunk")
+hunk_map("<leader>ghS", gitsigns.stage_buffer, "Stage Buffer")
+hunk_map("<leader>ghR", gitsigns.reset_buffer, "Reset Buffer")
+vim.keymap.set("v", "<leader>ghs", function()
+	gitsigns.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+end, { desc = "Stage Selection" })
+vim.keymap.set("v", "<leader>ghr", function()
+	gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+end, { desc = "Reset Selection" })
+
+-- Blame
+hunk_map("<leader>ghb", function()
+	gitsigns.blame_line({ full = true })
+end, "Blame Line")
+hunk_map("<leader>ghB", gitsigns.toggle_current_line_blame, "Toggle Line Blame")
+
+-- Hunk textobject (pairs with mini.ai's f/c)
+vim.keymap.set({ "o", "x" }, "ih", gitsigns.select_hunk, { desc = "Hunk" })

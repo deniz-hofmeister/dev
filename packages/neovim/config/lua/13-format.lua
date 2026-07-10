@@ -22,3 +22,8 @@ require("conform").setup({
 		lsp_format = "fallback",
 	},
 })
+
+-- Manual format; in visual mode formats the selection
+vim.keymap.set({ "n", "v" }, "<leader>af", function()
+	require("conform").format({ async = true, lsp_format = "fallback" })
+end, { desc = "Format" })

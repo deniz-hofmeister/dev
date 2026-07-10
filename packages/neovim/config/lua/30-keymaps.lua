@@ -13,11 +13,20 @@ wk.add({
 	{ "<leader>r", group = "Rust" },
 	{ "<leader>t", group = "Test" },
 	{ "<leader>x", group = "Trouble" },
+	{ "gh", group = "Hunks" },
 })
 
+-- Keybinding discovery: pressing <leader> (and waiting) already pops the
+-- which-key tree; these give the full pictures on demand.
+vim.keymap.set("n", "<leader>?", function()
+	wk.show({ global = false })
+end, { desc = "Buffer-local Keymaps" })
+vim.keymap.set("n", "<leader>k", "<cmd>WhichKey<cr>", { desc = "All Keymaps (tree)" })
+
 -- File explorers
-vim.keymap.set("n", "<leader>e", "<cmd>Neotree<cr>", { desc = "File Tree" })
+vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<cr>", { desc = "File Tree" })
 vim.keymap.set("n", "<leader>o", "<cmd>Oil --float<cr>", { desc = "Oil" })
+vim.keymap.set("n", "-", "<cmd>Oil<cr>", { desc = "Parent Directory (Oil)" })
 
 -- LSP actions (native grn/gra/grr/gri/grt/gO/K remain available)
 vim.keymap.set("n", "<leader>ar", vim.lsp.buf.rename, { desc = "Rename" })

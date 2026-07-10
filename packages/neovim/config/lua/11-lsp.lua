@@ -93,7 +93,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		if client:supports_method("textDocument/declaration") then
 			vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { buffer = ev.buf, desc = "Declaration" })
 		end
-		vim.keymap.set("n", "gr", vim.lsp.buf.references, { buffer = ev.buf, desc = "References" })
+		-- references: native grr (a bare gr map would delay grn/gra/gri/grt)
 
 		if client:supports_method("textDocument/inlayHint") then
 			vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
