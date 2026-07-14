@@ -122,9 +122,9 @@
             '';
           };
 
-          # LSP plugin (.lsp.json + manifest) pointing Claude Code's native
-          # LSP support at the language servers on the wrapper's PATH.
-          claudeLspPlugin = import ./packages/claude-lsp-plugin { inherit pkgs; };
+          # Declarative Claude Code plugin: LSP servers (resolved from the
+          # wrapper's PATH) and MCP servers (absolute store paths).
+          claudePlugin = import ./packages/claude-plugin { inherit pkgs; };
 
           # Wrapped Claude Code: editor tooling + headless CLI tools. GUI and
           # interactive-only packages stay in the dev shells.
@@ -134,7 +134,7 @@
             text = ''
               ${deps.shellHook}
               export ENABLE_LSP_TOOL=1
-              exec ${claude-code}/bin/claude --plugin-dir ${claudeLspPlugin} "$@"
+              exec ${claude-code}/bin/claude --plugin-dir ${claudePlugin} "$@"
             '';
           };
         in

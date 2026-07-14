@@ -1,10 +1,12 @@
-# Claude Code plugin wiring the flake's language servers into Claude Code's
-# native LSP support. Loaded session-locally via `--plugin-dir` in the claude
-# wrapper (flake.nix) — no marketplace, no interactive install.
+# Claude Code plugin carrying the full declarative Claude configuration:
+# language servers (native LSP support) and MCP servers. Loaded
+# session-locally via `--plugin-dir` in the claude wrapper (flake.nix) — no
+# marketplace, no interactive install, nothing written to ~/.claude.
 #
-# Every `command` below must be on the claude wrapper's PATH: they come from
-# editorPackages (packages/dependencies) plus rust-analyzer from the
-# rust-overlay toolchain. Keep the two lists in sync.
+# Every LSP `command` below must be on the claude wrapper's PATH: they come
+# from editorPackages (packages/dependencies) plus rust-analyzer from the
+# rust-overlay toolchain. Keep the two lists in sync. MCP servers reference
+# absolute store paths instead, so they need no PATH entry.
 { pkgs }:
 let
   lspServers = {
@@ -118,25 +120,37 @@ let
     };
   };
 
+  # Replaces the marketplace context7 plugin (`npx -y @upstash/context7-mcp`)
+  # with the nixpkgs-packaged server: pinned, cached, no npm fetch at startup.
+  mcpServers = {
+    context7 = {
+      command = "${pkgs.context7-mcp}/bin/context7-mcp";
+    };
+  };
+
   manifest = {
-    name = "nix-lsp";
-    description = "Language servers from the dev flake, wired into Claude Code's native LSP support";
+    name = "nix-dev";
+    description = "Declarative Claude Code config from the dev flake: language servers and MCP servers";
     version = "1.0.0";
     lspServers = "./.lsp.json";
+    mcpServers = "./.mcp.json";
   };
 in
-pkgs.runCommand "claude-lsp-plugin"
+pkgs.runCommand "claude-plugin"
   {
     passAsFile = [
       "manifest"
-      "servers"
+      "lsp"
+      "mcp"
     ];
     manifest = builtins.toJSON manifest;
-    servers = builtins.toJSON lspServers;
+    lsp = builtins.toJSON lspServers;
+    mcp = builtins.toJSON mcpServers;
     nativeBuildInputs = [ pkgs.jq ];
   }
   ''
     mkdir -p $out/.claude-plugin
     jq . "$manifestPath" > $out/.claude-plugin/plugin.json
-    jq . "$serversPath" > $out/.lsp.json
+    jq . "$lspPath" > $out/.lsp.json
+    jq . "$mcpPath" > $out/.mcp.json
   ''
