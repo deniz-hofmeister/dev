@@ -63,6 +63,10 @@ let
         ".jsonc" = "jsonc";
       };
     };
+    lua = {
+      command = "lua-language-server";
+      extensionToLanguage.".lua" = "lua";
+    };
     markdown = {
       command = "marksman";
       args = [ "server" ];

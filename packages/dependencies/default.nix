@@ -52,6 +52,7 @@ let
     cmake-language-server
     dockerfile-language-server
     lemminx
+    lua-language-server
     marksman
     nixd
     ruff # LSP + conform ruff_format/ruff_organize_imports
