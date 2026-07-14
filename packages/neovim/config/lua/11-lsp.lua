@@ -56,7 +56,20 @@ vim.lsp.config("basedpyright", {
 	},
 })
 
--- rust_analyzer is deliberately absent: rustaceanvim owns it (17-rust.lua)
+-- Make lua_ls understand the neovim runtime (vim global, API completion)
+vim.lsp.config("lua_ls", {
+	settings = {
+		Lua = {
+			runtime = { version = "LuaJIT" },
+			workspace = {
+				library = { vim.env.VIMRUNTIME },
+				checkThirdParty = false,
+			},
+		},
+	},
+})
+
+-- rust_analyzer is deliberately absent: rustaceanvim owns it (16-rust.lua)
 vim.lsp.enable({
 	"clangd",
 	"basedpyright",
@@ -75,6 +88,7 @@ vim.lsp.enable({
 	"cssls",
 	"jsonls",
 	"eslint",
+	"lua_ls",
 })
 
 vim.api.nvim_create_autocmd("LspAttach", {
