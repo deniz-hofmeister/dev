@@ -87,7 +87,6 @@ let
     ripgrep # telescope live_grep
     uv # neotest-python venv resolution for uv projects
     xclip # "+ clipboard provider (X11)
-    xsel
 
     # exepath("python3") for nvim-dap-python / neotest-python: debugpy and
     # pytest must be importable from this interpreter
@@ -107,7 +106,7 @@ let
     openssl
     podman-compose
     poppler-utils
-    terraform
+    opentofu # terraform-compatible; terraform itself is BUSL/unfree → never cached
     tesseract
     typescript
 

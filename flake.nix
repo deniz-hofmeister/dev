@@ -7,11 +7,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     # claude-code pin — update ONLY via `nix flake update nixpkgs-claude`.
     # Deliberately tracks master: updates should get the newest claude-code
-    # immediately, and the package is a cheap npm repack (cache misses are
-    # irrelevant).
+    # immediately. Only the package definition is taken from this input
+    # (callPackage below); its dependencies resolve from the cached `nixpkgs`
+    # above, so the uncached master rev never pulls builds in.
     nixpkgs-claude.url = "github:NixOS/nixpkgs";
-    # Neovim + plugins, updated independently of everything else.
-    nixpkgs-neovim.url = "github:NixOS/nixpkgs/nixos-unstable";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       # Reuse our nixpkgs instead of locking a second copy.
@@ -24,7 +23,6 @@
       self,
       nixpkgs,
       nixpkgs-claude,
-      nixpkgs-neovim,
       rust-overlay,
     }:
     let
@@ -38,18 +36,6 @@
       outputsFor =
         system:
         let
-          # Neovim stack lives entirely on nixpkgs-neovim: updating it never
-          # rebuilds tools, and updating tools never rebuilds neovim/plugins.
-          pkgsNeovim = import nixpkgs-neovim {
-            inherit system;
-            config.allowUnfree = true;
-          };
-
-          pkgsClaude = import nixpkgs-claude {
-            inherit system;
-            config.allowUnfree = true;
-          };
-
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
@@ -76,8 +62,12 @@
           pkgsCrossAarch64Musl = pkgs.pkgsCross.aarch64-multiplatform-musl;
           pkgsCrossMusl64 = pkgs.pkgsCross.musl64;
 
-          myNeovim = import ./packages/neovim { pkgs = pkgsNeovim; };
+          myNeovim = import ./packages/neovim { inherit pkgs; };
           deps = import ./packages/dependencies { inherit pkgs; };
+
+          # Newest claude-code definition from the master pin, dependencies
+          # from the cached main nixpkgs (see inputs comment).
+          claude-code = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/cl/claude-code/package.nix" { };
 
           # Rust toolchain with cross-compilation targets. `minimal` base
           # profile: `default` would add rust-docs (~700 MiB of offline HTML)
@@ -132,6 +122,10 @@
             '';
           };
 
+          # LSP plugin (.lsp.json + manifest) pointing Claude Code's native
+          # LSP support at the language servers on the wrapper's PATH.
+          claudeLspPlugin = import ./packages/claude-lsp-plugin { inherit pkgs; };
+
           # Wrapped Claude Code: editor tooling + headless CLI tools. GUI and
           # interactive-only packages stay in the dev shells.
           claude-with-deps = pkgs.writeShellApplication {
@@ -139,7 +133,8 @@
             runtimeInputs = deps.claudePackages ++ rustPackages;
             text = ''
               ${deps.shellHook}
-              exec ${pkgsClaude.claude-code}/bin/claude "$@"
+              export ENABLE_LSP_TOOL=1
+              exec ${claude-code}/bin/claude --plugin-dir ${claudeLspPlugin} "$@"
             '';
           };
         in
