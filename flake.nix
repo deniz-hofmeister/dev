@@ -42,6 +42,21 @@
             overlays = [
               rust-overlay.overlays.default
               (final: prev: {
+                # pandas-stubs' test suite fails against current numpy
+                # (deprecation-warning strictness), so Hydra has no cached
+                # build either. The stubs themselves are fine — skip the
+                # tests. Drop this when it builds again on unstable.
+                pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+                  (pyFinal: pyPrev: {
+                    pandas-stubs = pyPrev.pandas-stubs.overridePythonAttrs (_: {
+                      doCheck = false;
+                      # imports pandas, which only enters the build via the
+                      # (now skipped) test inputs
+                      pythonImportsCheck = [ ];
+                    });
+                  })
+                ];
+
                 # Full tessdata is >1 GiB (every language); keep a small set.
                 # pytesseract resolves pkgs.tesseract, so it follows this too.
                 tesseract = prev.tesseract.override {
