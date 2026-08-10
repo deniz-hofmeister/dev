@@ -130,6 +130,13 @@ let
     context7 = {
       command = "${pkgs.context7-mcp}/bin/context7-mcp";
     };
+    # Remote server: nothing to package. The definition is declarative, but the
+    # OAuth token it needs is not — run `/design-login` once per machine and it
+    # lands in ~/.claude/.credentials.json.
+    claude-design = {
+      type = "http";
+      url = "https://api.anthropic.com/v1/design/mcp";
+    };
   };
 
   manifest = {
