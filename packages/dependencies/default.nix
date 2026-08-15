@@ -194,6 +194,7 @@ let
   cliPackages = [
     awscli2
     bun
+    cargo-semver-checks # transforms release gate: prove the API diff vs the published baseline
     csvkit
     glibc # ldd / getent / iconv
     jq
