@@ -109,6 +109,7 @@
               "thumbv7em-none-eabi" # Cortex-M4/M7 (soft float)
               "thumbv7em-none-eabihf" # Cortex-M4F/M7F (hard float) - STM32F4/F7/H7
               "thumbv8m.main-none-eabihf" # Cortex-M33/M55
+              "riscv32imc-unknown-none-elf" # ESP32-C3/C6 (transforms CI matrix)
               # WebAssembly target
               "wasm32-unknown-unknown" # WASM for web apps (Leptos, Yew, etc.)
             ];
@@ -170,6 +171,12 @@
             default = pkgs.mkShell {
               packages = commonShellPackages;
               shellHook = deps.shellHook;
+            };
+
+            # MSRV verification for the transforms crate: `cargo check` must
+            # pass on the pinned minimum Rust (CI parity without a CI roundtrip).
+            msrv = pkgs.mkShell {
+              packages = [ pkgs.rust-bin.stable."1.86.0".minimal ];
             };
 
             # x86_64 musl static builds

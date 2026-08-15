@@ -194,8 +194,10 @@ let
   cliPackages = [
     awscli2
     bun
+    cargo-audit # transforms CI parity: RustSec advisory scan
     cargo-semver-checks # transforms release gate: prove the API diff vs the published baseline
     csvkit
+    gh # GitHub PRs/issues/releases from agent and shell
     glibc # ldd / getent / iconv
     jq
     nodejs
