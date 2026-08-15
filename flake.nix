@@ -38,7 +38,12 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            config.allowUnfree = true;
+            config = {
+              allowUnfree = true;
+              # Google's SDK/NDK archives are unfree *and* gated behind a
+              # separate license flag; androidenv refuses to evaluate without it.
+              android_sdk.accept_license = true;
+            };
             overlays = [
               rust-overlay.overlays.default
               (final: prev: {
