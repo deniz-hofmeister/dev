@@ -89,6 +89,10 @@
           # from the cached main nixpkgs (see inputs comment).
           claude-code = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/cl/claude-code/package.nix" { };
 
+          # OpenAI Codex CLI, same pattern: definition from the master pin,
+          # dependencies from the cached main nixpkgs.
+          codex = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/co/codex/package.nix" { };
+
           # Rust toolchain with cross-compilation targets. `minimal` base
           # profile: `default` would add rust-docs (~700 MiB of offline HTML)
           # on top of the components below.
@@ -164,6 +168,7 @@
             default = neovim-with-lsps;
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
+            inherit codex;
           };
 
           devShells = {
