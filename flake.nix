@@ -91,7 +91,18 @@
 
           # OpenAI Codex CLI, same pattern: definition from the master pin,
           # dependencies from the cached main nixpkgs.
-          codex = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/co/codex/package.nix" { };
+          codex-cli = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/co/codex/package.nix" { };
+
+          # Keep the official OpenAI documentation MCP server declarative while
+          # leaving authentication and the rest of Codex's config in CODEX_HOME.
+          codex = pkgs.writeShellApplication {
+            name = "codex";
+            text = ''
+              exec ${codex-cli}/bin/codex \
+                --config 'mcp_servers.openaiDeveloperDocs.url="https://developers.openai.com/mcp"' \
+                "$@"
+            '';
+          };
 
           # Rust toolchain with cross-compilation targets. `minimal` base
           # profile: `default` would add rust-docs (~700 MiB of offline HTML)
