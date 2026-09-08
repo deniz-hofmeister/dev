@@ -93,13 +93,29 @@
           # dependencies from the cached main nixpkgs.
           codex-cli = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/co/codex/package.nix" { };
 
-          # Keep the official OpenAI documentation MCP server declarative while
-          # leaving authentication and the rest of Codex's config in CODEX_HOME.
+          # A directly runnable copy of the agent environment, useful for
+          # diagnostics and for tools launched outside an existing agent session.
+          codex-tools = pkgs.writeShellApplication {
+            name = "codex-tools";
+            runtimeInputs = deps.agentPackages ++ rustPackages;
+            text = ''
+              if [ "$#" -eq 0 ]; then
+                echo 'Usage: codex-tools COMMAND [ARG...]' >&2
+                exit 2
+              fi
+              ${deps.shellHook}
+              exec "$@"
+            '';
+          };
+
+          # Codex gets the same tools and build environment as Claude. Keep MCP
+          # configuration declarative and authentication in the user's CODEX_HOME.
           codex = pkgs.writeShellApplication {
             name = "codex";
             text = ''
-              exec ${codex-cli}/bin/codex \
+              exec ${codex-tools}/bin/codex-tools ${codex-cli}/bin/codex \
                 --config 'mcp_servers.openaiDeveloperDocs.url="https://developers.openai.com/mcp"' \
+                --config 'mcp_servers.context7.command="${pkgs.context7-mcp}/bin/context7-mcp"' \
                 "$@"
             '';
           };
@@ -114,6 +130,7 @@
               "rustfmt"
               "clippy"
               "llvm-tools-preview"
+              "miri"
             ];
             targets = [
               "x86_64-unknown-linux-musl"
@@ -166,7 +183,7 @@
           # interactive-only packages stay in the dev shells.
           claude-with-deps = pkgs.writeShellApplication {
             name = "claude";
-            runtimeInputs = deps.claudePackages ++ rustPackages;
+            runtimeInputs = deps.agentPackages ++ rustPackages;
             text = ''
               ${deps.shellHook}
               export ENABLE_LSP_TOOL=1
@@ -179,7 +196,7 @@
             default = neovim-with-lsps;
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
-            inherit codex;
+            inherit codex codex-tools;
           };
 
           devShells = {
@@ -225,6 +242,7 @@
           checks = {
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
+            inherit codex codex-tools;
           };
 
           formatter = pkgs.nixfmt-tree;

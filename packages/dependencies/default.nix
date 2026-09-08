@@ -1,16 +1,21 @@
 { pkgs }:
 with pkgs;
 let
-  # Default python (3.13) — same interpreter the rest of nixpkgs' tools use,
+  # Default python — same interpreter the rest of nixpkgs' tools use,
   # so the closure carries exactly one CPython.
   pythonWithTools = python3.withPackages (
     ps: with ps; [
       beautifulsoup4
+      build
+      coverage
+      cython
       debugpy
       httpx
+      hypothesis
       lxml
       matplotlib
       numpy
+      nox
       odfpy
       opencv4
       openpyxl
@@ -19,13 +24,22 @@ let
       pillow
       pip
       pydantic
+      pybind11
       pytest
+      pytest-asyncio
+      pytest-cov
+      pytest-mock
+      pytest-xdist
       pyxlsb
       pypdf
       pytesseract
       pyyaml
       requests
       scipy
+      setuptools
+      tox
+      virtualenv
+      wheel
       xlrd
       xlsxwriter
     ]
@@ -90,8 +104,12 @@ let
     "-Dorg.gradle.project.android.aapt2FromMavenOverride=${androidSdkRoot}/build-tools/${androidBuildToolsVersion}/aapt2"
   ];
 
+  # The packaged Android SDK/build tools only support x86_64 Linux hosts.
+  # Keep native C++/Python/Rust tooling usable on aarch64 Linux as well.
+  androidSupported = stdenv.hostPlatform.isx86_64;
+
   # Android build/debug env. Everything AGP resolves by absolute path.
-  androidHook = ''
+  androidHook = lib.optionalString androidSupported ''
     export ANDROID_HOME=${androidSdkRoot}
     export ANDROID_SDK_ROOT=${androidSdkRoot}
     export ANDROID_NDK_ROOT=${androidSdkRoot}/ndk/${androidNdkVersion}
@@ -190,7 +208,7 @@ let
     # toolchain (flake.nix), which keeps them in lockstep with nightly
   ];
 
-  # Headless CLI tools an agent (or a build) can exec: dev shells + claude.
+  # Headless CLI tools an agent (or a build) can exec: dev shells + both agents.
   cliPackages = [
     awscli2
     bun
@@ -223,18 +241,95 @@ let
     binaryen
   ];
 
+  # Native language tooling shared by Codex, Claude, and development shells.
+  # Keep these out of the editor-only PATH unless Neovim actually needs them.
+  developmentPackages = [
+    # C/C++ compilers, preprocessors, linkers, build systems, and package tools.
+    clang
+    lld
+    llvm # llvm-cov, llvm-profdata, llvm-objdump, and other binary tools
+    ninja
+    meson
+    autoconf
+    automake
+    libtool
+    bison
+    flex
+    ccache
+    bear # compile_commands.json for clangd / clang-tidy on Make projects
+    conan
+    cmake-format
+    valgrind
+    gcovr
+    lcov
+    doxygen
+    graphviz
+
+    # Python formatting, type checking, security checks, and profiling.
+    # Ruff, basedpyright, uv, debugpy, pytest, and data tools are above.
+    black
+    isort
+    mypy
+    pylint
+    bandit
+    pip-audit
+    py-spy
+
+    # Cargo's compiler/LSP/formatter/Clippy/Miri and LLVM components come
+    # from one rust-overlay toolchain in flake.nix, including cross targets.
+    cargo-binutils
+    cargo-bloat
+    cargo-deny
+    cargo-edit
+    cargo-expand
+    cargo-flamegraph
+    cargo-fuzz
+    cargo-hack
+    cargo-llvm-cov
+    cargo-machete
+    cargo-mutants
+    cargo-outdated
+    cargo-public-api
+    cargo-tarpaulin
+    cargo-udeps
+    cargo-watch
+    sccache
+
+    # Build automation, performance measurement, and native diagnostics.
+    hyperfine
+    strace
+    patchelf
+    pre-commit
+    shellcheck
+    shfmt
+  ];
+
+  # Discovery paths for common C++ libraries and test frameworks. Library
+  # packages on PATH alone don't expose their headers or CMake/pkg-config files.
+  nativeLibraries = [
+    boost
+    catch2_3
+    eigen
+    fmt
+    gtest
+    openssl
+    spdlog
+    zlib
+  ];
+
+  agentPackages = editorPackages ++ cliPackages ++ developmentPackages ++ androidPackages;
+
   # Android: compile an APK/AAB and debug it on a connected device.
   # adb/fastboot/apksigner/zipalign/aapt2/lldb-server all come from the SDK
   # itself, so no separate android-tools here — a second adb on PATH would
   # fight the SDK's over the adb server version.
-  androidPackages = [
+  androidPackages = lib.optionals androidSupported [
     androidSdk
     # Only the default JDK goes on PATH — a second `java`/`javac` there would
     # resolve by list order. jdk17 stays off PATH and reaches Gradle through
     # installations.paths above; the wrapper text retains it in the closure.
     androidJdk
     gradle
-    ninja # AGP's externalNativeBuild generator for CMake projects
 
     # APK/AAB inspection: decompile, disassemble, split/build bundles
     apktool
@@ -253,7 +348,7 @@ let
     spdlog
   ];
 
-  # Interactive / GUI / desktop-only: dev shells only. Useless in the claude
+  # Interactive / GUI / desktop-only: dev shells only. Useless in the agent
   # wrapper (an agent can't drive a GUI or an interactive TUI).
   desktopPackages = [
     fzf
@@ -279,12 +374,18 @@ let
     export fmt_DIR=${fmt.dev}/lib/cmake/fmt
   '';
 
-  # Full env for dev shells / claude: editor env plus android and audio
-  # runtime wiring. The claude wrapper exports these before exec'ing claude,
-  # so every tool it spawns (gradle, adb, cargo) inherits them.
+  # Full env for dev shells and both agents: native libraries, Android, and
+  # audio runtime wiring. Every child process inherits the build environment.
   shellHook = ''
     ${editorHook}
     ${androidHook}
+    export CMAKE_PREFIX_PATH="${
+      lib.makeSearchPath "" ((map lib.getDev nativeLibraries) ++ (map lib.getLib nativeLibraries))
+    }''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+    export PKG_CONFIG_PATH="${lib.makeSearchPathOutput "dev" "lib/pkgconfig" nativeLibraries}:${
+      lib.makeSearchPathOutput "dev" "share/pkgconfig" nativeLibraries
+    }:$PKG_CONFIG_PATH"
+    export LIBCLANG_PATH=${lib.getLib llvmPackages.libclang}/lib
     export PKG_CONFIG_PATH=${alsa-lib.dev}/lib/pkgconfig:$PKG_CONFIG_PATH
     export LD_LIBRARY_PATH=${runtimeLibraryPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
     export ALSA_CONFIG_DIR=${alsa-lib}/share/alsa
@@ -294,11 +395,13 @@ let
 in
 {
   inherit
+    agentPackages
     editorPackages
     editorHook
     androidHook
     shellHook
     ;
-  claudePackages = editorPackages ++ cliPackages ++ androidPackages;
-  packages = editorPackages ++ cliPackages ++ androidPackages ++ libPackages ++ desktopPackages;
+  # Compatibility for consumers importing this dependency set directly.
+  claudePackages = agentPackages;
+  packages = agentPackages ++ libPackages ++ nativeLibraries ++ desktopPackages;
 }
