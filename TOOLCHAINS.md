@@ -24,6 +24,7 @@ nix run /home/dev/repos/dev#codex-tools -- cargo nextest run
 | Rust analysis | cargo-audit, deny, semver-checks, public-api, machete, udeps, outdated, hack, expand, bloat, binutils |
 | Rust testing and performance | cargo-llvm-cov, tarpaulin, fuzz, mutants, flamegraph, watch, edit, sccache |
 | Shared utilities | Git/GitHub CLI, ripgrep, jq, pre-commit, ShellCheck, shfmt, hyperfine, strace, patchelf |
+| Cloud deployment | AWS CLI, OpenTofu, Modal Python SDK and `modal` CLI |
 
 Claude's existing Android (x86_64 Linux hosts), embedded/probe, WASM/web,
 document/PDF/OCR, and Python data-processing packages are also available to
@@ -36,6 +37,21 @@ Use project-specific virtual environments and dependency manifests for Python
 application dependencies. On NixOS, select the packaged interpreter explicitly:
 `uv venv --python "$(command -v python3)"`. The Nix-provided Python includes the
 shared tools and data libraries; a new isolated venv needs its own dependencies.
+
+Modal is included in that shared Python environment, so both `import modal`
+and the `modal` command work in Claude, Codex, and the development shells.
+Its version follows the existing nixpkgs lock. Authenticate once outside the
+Nix store; credentials are not included in the flake:
+
+```sh
+nix run .#codex-tools -- modal --version
+nix run .#codex-tools -- modal token new
+nix develop -c python3 -c 'import modal; print(modal.__version__)'
+```
+
+Existing agent sessions keep their old environment; relaunch them or use
+`codex-tools` to access the updated toolset immediately. Project virtual
+environments and deployed worker images still declare their own Modal dependency.
 
 The Rust toolchain already includes musl x86_64/aarch64, ARM Cortex-M, RISC-V,
 and `wasm32-unknown-unknown` targets. Use `nix develop .#x86_64-musl` or

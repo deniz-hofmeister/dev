@@ -14,6 +14,7 @@ let
       hypothesis
       lxml
       matplotlib
+      modal # Python SDK and `modal` CLI for GPU/serverless deployment
       numpy
       nox
       odfpy

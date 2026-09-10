@@ -19,7 +19,7 @@ commands=(
   cargo-llvm-cov cargo-machete cargo-mutants cargo-outdated cargo-public-api
   cargo-tarpaulin cargo-udeps cargo-watch sccache
   hyperfine strace patchelf pre-commit shellcheck shfmt
-  jq node gh tesseract pdftotext adb java
+  jq node gh tesseract pdftotext adb java modal
 )
 for command in "${commands[@]}"; do
   command -v "$command" >/dev/null || {
@@ -28,6 +28,8 @@ for command in "${commands[@]}"; do
   }
 done
 printf 'Found %s required commands.\n' "${#commands[@]}"
+modal --version
+python3 -c 'import modal; app = modal.App("local-toolchain-smoke"); print("Modal SDK", modal.__version__)'
 test -f "$LIBCLANG_PATH/libclang.so"
 pkg-config --exists openssl fmt spdlog zlib
 
