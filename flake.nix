@@ -62,6 +62,14 @@
                   })
                 ];
 
+                # cargo-semver-checks' `stability_aware_mode` snapshot test
+                # fails in the sandbox on current unstable ("can't create
+                # cache dir: Permission denied"), so Hydra has no cached
+                # build. Skip that one test. Drop when it builds again.
+                cargo-semver-checks = prev.cargo-semver-checks.overrideAttrs (o: {
+                  checkFlags = (o.checkFlags or [ ]) ++ [ "--skip=stability_aware_mode" ];
+                });
+
                 # Full tessdata is >1 GiB (every language); keep a small set.
                 # pytesseract resolves pkgs.tesseract, so it follows this too.
                 tesseract = prev.tesseract.override {
