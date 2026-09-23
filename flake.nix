@@ -209,7 +209,7 @@
             # MSRV verification for the transforms crate: `cargo check` must
             # pass on the pinned minimum Rust (CI parity without a CI roundtrip).
             msrv = pkgs.mkShell {
-              packages = [ pkgs.rust-bin.stable."1.86.0".minimal ];
+              packages = deps.sharedPackages ++ [ pkgs.rust-bin.stable."1.86.0".minimal ];
             };
 
             # x86_64 musl static builds

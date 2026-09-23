@@ -25,6 +25,12 @@ nix run /home/dev/repos/dev#codex-tools -- cargo nextest run
 | Rust testing and performance | cargo-llvm-cov, tarpaulin, fuzz, mutants, flamegraph, watch, edit, sccache |
 | Shared utilities | Git/GitHub CLI, ripgrep, jq, pre-commit, ShellCheck, shfmt, hyperfine, strace, patchelf |
 | Cloud deployment | AWS CLI, OpenTofu, Modal Python SDK and `modal` CLI |
+| Provisioning | Ansible (`ansible`, `ansible-playbook`, `ansible-galaxy`, `ansible-vault`) |
+
+Ansible is shared by every executable wrapper (including Neovim) and every
+development shell, including `msrv`. Its version follows `flake.lock`.
+From an existing session, use
+`nix run /home/deniz/repos/dev#codex-tools -- ansible-playbook --version`.
 
 Claude's existing Android (x86_64 Linux hosts), embedded/probe, WASM/web,
 document/PDF/OCR, and Python data-processing packages are also available to

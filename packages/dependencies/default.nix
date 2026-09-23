@@ -154,10 +154,13 @@ let
 
   runtimeLibraryPath = "${spdlog}/lib:${alsa-lib}/lib:${alsa-plugins}/lib:${pipewire}/lib";
 
+  # Available in every executable wrapper and development shell.
+  sharedPackages = [ ansible ];
+
   # Editor layer: every binary the neovim config resolves on PATH at runtime
   # (LSP servers, formatters, linters, debug adapters, build/test drivers).
   # This is what `nix run .#neovim` ships; keep it minimal.
-  editorPackages = [
+  editorPackages = sharedPackages ++ [
     # LSP servers
     bash-language-server
     basedpyright
@@ -396,6 +399,7 @@ let
 in
 {
   inherit
+    sharedPackages
     agentPackages
     editorPackages
     editorHook
