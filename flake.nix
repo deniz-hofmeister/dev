@@ -16,6 +16,13 @@
       # Reuse our nixpkgs instead of locking a second copy.
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Runs Nix-built GL/CUDA programs against the host (non-NixOS) NVIDIA
+    # driver: copies the host driver libs into a cache at runtime, so no
+    # driver version is pinned at eval time (unlike nixGL).
+    nix-gl-host = {
+      url = "github:numtide/nix-gl-host";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -24,6 +31,7 @@
       nixpkgs,
       nixpkgs-claude,
       rust-overlay,
+      nix-gl-host,
     }:
     let
       inherit (nixpkgs) lib;
@@ -84,6 +92,28 @@
                 };
               })
             ];
+          };
+
+          # CUDA-enabled package set, used only for Blender. Deliberately
+          # without our overlays: it must match what the nixos-cuda Hydra
+          # builds, or Blender (and its CUDA deps) compile locally.
+          pkgsCuda = import nixpkgs {
+            inherit system;
+            config = {
+              allowUnfree = true;
+              cudaSupport = true;
+            };
+          };
+
+          # Blender with Cycles CUDA/OptiX kernels, run against the host
+          # NVIDIA driver. Needs the nixos-cuda substituter (cache.nixos-cuda.org)
+          # in nix.conf; without it this is a multi-hour local build.
+          blender = pkgs.writeShellApplication {
+            name = "blender";
+            text = ''
+              exec ${nix-gl-host.packages.${system}.default}/bin/nixglhost \
+                ${pkgsCuda.blender}/bin/blender "$@"
+            '';
           };
 
           # Cross-compilation package sets
@@ -204,7 +234,7 @@
             default = neovim-with-lsps;
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
-            inherit codex codex-tools;
+            inherit blender codex codex-tools;
           };
 
           devShells = {
