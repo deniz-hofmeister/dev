@@ -105,14 +105,32 @@
             };
           };
 
+          # nix-gl-host only puts its glx/cuda/egl dirs on LD_LIBRARY_PATH; the
+          # rest of the host driver lands in a lib/ dir reachable solely via
+          # those DSOs' RPATH. OptiX is dlopen'ed directly by Cycles, so move
+          # libnvoptix into the CUDA set (its own RPATH still finds rtcore).
+          # It also copies (not symlinks) libcuda.so and libcuda.so.1, and
+          # Cycles and OptiX dlopen different names: two driver instances,
+          # OptiX then sees an uninitialised CUDA. Skip the unversioned one.
+          nixglhost = nix-gl-host.packages.${system}.default.overrideAttrs (o: {
+            postPatch = (o.postPatch or "") + ''
+              substituteInPlace src/nixglhost.py \
+                --replace-fail '    "libnvoptix\\.so.*$",' "" \
+                --replace-fail '"libcuda\\.so.*$",' '"libcuda\\.so\\..*$", "libnvoptix\\.so.*$",'
+              # upstream's checkPhase runs `black --check`
+              black -q src/nixglhost.py
+            '';
+          });
+
           # Blender with Cycles CUDA/OptiX kernels, run against the host
           # NVIDIA driver. Needs the nixos-cuda substituter (cache.nixos-cuda.org)
           # in nix.conf; without it this is a multi-hour local build.
           blender = pkgs.writeShellApplication {
             name = "blender";
             text = ''
-              exec ${nix-gl-host.packages.${system}.default}/bin/nixglhost \
-                ${pkgsCuda.blender}/bin/blender "$@"
+              # A sourced ROS/other env would otherwise shadow Nix RUNPATHs.
+              unset LD_LIBRARY_PATH
+              exec ${nixglhost}/bin/nixglhost ${pkgsCuda.blender}/bin/blender "$@"
             '';
           };
 
