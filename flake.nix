@@ -134,6 +134,17 @@
             '';
           };
 
+          # KiCad (with 3D models) run against the host NVIDIA driver: the PCB
+          # editor's accelerated canvas and the 3D viewer need OpenGL.
+          kicad = pkgs.writeShellApplication {
+            name = "kicad";
+            text = ''
+              # A sourced ROS/other env would otherwise shadow Nix RUNPATHs.
+              unset LD_LIBRARY_PATH
+              exec ${nixglhost}/bin/nixglhost ${pkgs.kicad}/bin/kicad "$@"
+            '';
+          };
+
           # Cross-compilation package sets
           pkgsCrossAarch64Musl = pkgs.pkgsCross.aarch64-multiplatform-musl;
           pkgsCrossMusl64 = pkgs.pkgsCross.musl64;
@@ -252,7 +263,12 @@
             default = neovim-with-lsps;
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
-            inherit blender codex codex-tools;
+            inherit
+              blender
+              codex
+              codex-tools
+              kicad
+              ;
           };
 
           devShells = {
