@@ -6,7 +6,7 @@
 - Run neovim: `nix run .#neovim`
 - Run zsh shell: `nix run .#zsh`
 - Format nix files: `nixfmt *.nix`
-- Install shell aliases (nv, dev, cl, cld, blender, kicad, steam, wot): `./install-aliases.sh [--dry-run]`
+- Install shell aliases (nv, dev, cl, cld, cx, cxd, blender, kicad, steam, wot): `./install-aliases.sh [--dry-run]`
 
 ## Code Style Guidelines
 

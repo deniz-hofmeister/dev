@@ -245,7 +245,7 @@ let
     binaryen
   ];
 
-  # Native language tooling shared by Claude and development shells.
+  # Native language tooling shared by Codex, Claude, and development shells.
   # Keep these out of the editor-only PATH unless Neovim actually needs them.
   developmentPackages = [
     # C/C++ compilers, preprocessors, linkers, build systems, and package tools.

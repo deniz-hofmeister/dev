@@ -1,8 +1,9 @@
 # Agent development tools
 
-`nix run .#claude` and the development shells share the same headless
-development packages and build environment. Existing `cl` / `cld` aliases pick
-these up on their next launch. Versions are pinned by `flake.lock`.
+`nix run .#codex`, `nix run .#claude` and the development shells share the same
+headless development packages and build environment. Existing `cx` / `cxd` and
+`cl` / `cld` aliases pick these up on their next launch. Versions are pinned by
+`flake.lock`.
 
 Run a tool directly in that environment, including from an older session:
 
@@ -33,9 +34,10 @@ From an existing session, use
 `nix develop /home/dev/repos/dev -c ansible-playbook --version`.
 
 Android (x86_64 Linux hosts), embedded/probe, WASM/web, document/PDF/OCR, and
-Python data-processing packages are available to Claude and the development
-shells. Language-server executables are on PATH; Claude additionally gets them
-through its native LSP plugin.
+Python data-processing packages are available to Codex, Claude and the
+development shells. The OpenAI documentation and Context7 MCP servers are
+configured by the Codex launcher. Language-server executables are on PATH;
+Claude additionally gets them through its native LSP plugin.
 
 Use project-specific virtual environments and dependency manifests for Python
 application dependencies. On NixOS, select the packaged interpreter explicitly:
@@ -43,7 +45,7 @@ application dependencies. On NixOS, select the packaged interpreter explicitly:
 shared tools and data libraries; a new isolated venv needs its own dependencies.
 
 Modal is included in that shared Python environment, so both `import modal`
-and the `modal` command work in Claude and the development shells.
+and the `modal` command work in Claude, Codex, and the development shells.
 Its version follows the existing nixpkgs lock. Authenticate once outside the
 Nix store; credentials are not included in the flake:
 
@@ -67,7 +69,7 @@ still depend on the host's device and kernel permissions.
 Build and verify:
 
 ```sh
-nix build .#claude .#neovim --no-link
+nix build .#codex .#codex-tools .#claude .#neovim --no-link
 nix develop -c bash test/toolchain-smoke.sh
 nix flake check --no-build
 ```
@@ -84,4 +86,4 @@ OnlyOffice dependency in the desktop development shell.
 
 The shared packages and hooks live in `packages/dependencies/default.nix`;
 launchers and the Rust toolchain live in `flake.nix`. To add a native CLI tool
-for Claude and the development shells, extend `developmentPackages` there.
+for Codex, Claude and the development shells, extend `developmentPackages` there.
