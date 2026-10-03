@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run with: nix run .#codex-tools -- bash test/toolchain-smoke.sh
+# Run with: nix develop -c bash test/toolchain-smoke.sh
 # Uses disposable projects; no registry downloads are needed.
 set -euo pipefail
 

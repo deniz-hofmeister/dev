@@ -1,15 +1,15 @@
 # Agent development tools
 
-`nix run .#codex` and `nix run .#claude` share the same headless development
-packages and build environment. Existing `cx` / `cxd` and `cl` / `cld` aliases
-pick these up on their next launch. Versions are pinned by `flake.lock`.
+`nix run .#claude` and the development shells share the same headless
+development packages and build environment. Existing `cl` / `cld` aliases pick
+these up on their next launch. Versions are pinned by `flake.lock`.
 
-Run a tool directly in Codex's environment, including from an older session:
+Run a tool directly in that environment, including from an older session:
 
 ```sh
-nix run /home/dev/repos/dev#codex-tools -- clang++ --version
-nix run /home/dev/repos/dev#codex-tools -- python3 -m pytest
-nix run /home/dev/repos/dev#codex-tools -- cargo nextest run
+nix develop /home/dev/repos/dev -c clang++ --version
+nix develop /home/dev/repos/dev -c python3 -m pytest
+nix develop /home/dev/repos/dev -c cargo nextest run
 ```
 
 | Area | Available tools |
@@ -30,14 +30,12 @@ nix run /home/dev/repos/dev#codex-tools -- cargo nextest run
 Ansible is shared by every executable wrapper (including Neovim) and every
 development shell, including `msrv`. Its version follows `flake.lock`.
 From an existing session, use
-`nix run /home/deniz/repos/dev#codex-tools -- ansible-playbook --version`.
+`nix develop /home/dev/repos/dev -c ansible-playbook --version`.
 
-Claude's existing Android (x86_64 Linux hosts), embedded/probe, WASM/web,
-document/PDF/OCR, and Python data-processing packages are also available to
-Codex. The OpenAI documentation
-and Context7 MCP servers are configured by the Codex launcher. Language-server
-executables are available on PATH; Claude's native LSP plugin remains specific
-to Claude.
+Android (x86_64 Linux hosts), embedded/probe, WASM/web, document/PDF/OCR, and
+Python data-processing packages are available to Claude and the development
+shells. Language-server executables are on PATH; Claude additionally gets them
+through its native LSP plugin.
 
 Use project-specific virtual environments and dependency manifests for Python
 application dependencies. On NixOS, select the packaged interpreter explicitly:
@@ -45,18 +43,18 @@ application dependencies. On NixOS, select the packaged interpreter explicitly:
 shared tools and data libraries; a new isolated venv needs its own dependencies.
 
 Modal is included in that shared Python environment, so both `import modal`
-and the `modal` command work in Claude, Codex, and the development shells.
+and the `modal` command work in Claude and the development shells.
 Its version follows the existing nixpkgs lock. Authenticate once outside the
 Nix store; credentials are not included in the flake:
 
 ```sh
-nix run .#codex-tools -- modal --version
-nix run .#codex-tools -- modal token new
+nix develop -c modal --version
+nix develop -c modal token new
 nix develop -c python3 -c 'import modal; print(modal.__version__)'
 ```
 
 Existing agent sessions keep their old environment; relaunch them or use
-`codex-tools` to access the updated toolset immediately. Project virtual
+`nix develop -c …` to access the updated toolset immediately. Project virtual
 environments and deployed worker images still declare their own Modal dependency.
 
 The Rust toolchain already includes musl x86_64/aarch64, ARM Cortex-M, RISC-V,
@@ -69,8 +67,8 @@ still depend on the host's device and kernel permissions.
 Build and verify:
 
 ```sh
-nix build .#codex .#codex-tools .#claude --no-link
-nix run .#codex-tools -- bash test/toolchain-smoke.sh
+nix build .#claude .#neovim --no-link
+nix develop -c bash test/toolchain-smoke.sh
 nix flake check --no-build
 ```
 
@@ -86,4 +84,4 @@ OnlyOffice dependency in the desktop development shell.
 
 The shared packages and hooks live in `packages/dependencies/default.nix`;
 launchers and the Rust toolchain live in `flake.nix`. To add a native CLI tool
-for both agents, extend `developmentPackages` there.
+for Claude and the development shells, extend `developmentPackages` there.

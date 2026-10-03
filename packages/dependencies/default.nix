@@ -212,7 +212,7 @@ let
     # toolchain (flake.nix), which keeps them in lockstep with nightly
   ];
 
-  # Headless CLI tools an agent (or a build) can exec: dev shells + both agents.
+  # Headless CLI tools an agent (or a build) can exec: dev shells + Claude.
   cliPackages = [
     awscli2
     bun
@@ -245,7 +245,7 @@ let
     binaryen
   ];
 
-  # Native language tooling shared by Codex, Claude, and development shells.
+  # Native language tooling shared by Claude and development shells.
   # Keep these out of the editor-only PATH unless Neovim actually needs them.
   developmentPackages = [
     # C/C++ compilers, preprocessors, linkers, build systems, and package tools.
@@ -378,7 +378,7 @@ let
     export fmt_DIR=${fmt.dev}/lib/cmake/fmt
   '';
 
-  # Full env for dev shells and both agents: native libraries, Android, and
+  # Full env for dev shells and Claude: native libraries, Android, and
   # audio runtime wiring. Every child process inherits the build environment.
   shellHook = ''
     ${editorHook}

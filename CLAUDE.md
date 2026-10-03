@@ -27,4 +27,6 @@
 - `/packages`: Contains all packages defined in the flake
 - `/packages/neovim`: Neovim configuration
 - `/packages/dependencies`: System dependencies
+- `/packages/{blender,kicad,steam,wot}`: Standalone sub-flakes with their own
+  `flake.lock`, not outputs of the root flake (`nix run path:./packages/<name>`)
 - Maintain separation between plugins, config and keymaps

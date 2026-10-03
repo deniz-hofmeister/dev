@@ -16,13 +16,6 @@
       # Reuse our nixpkgs instead of locking a second copy.
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Runs Nix-built GL/CUDA programs against the host (non-NixOS) NVIDIA
-    # driver: copies the host driver libs into a cache at runtime, so no
-    # driver version is pinned at eval time (unlike nixGL).
-    nix-gl-host = {
-      url = "github:numtide/nix-gl-host";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -31,7 +24,6 @@
       nixpkgs,
       nixpkgs-claude,
       rust-overlay,
-      nix-gl-host,
     }:
     let
       inherit (nixpkgs) lib;
@@ -94,57 +86,6 @@
             ];
           };
 
-          # CUDA-enabled package set, used only for Blender. Deliberately
-          # without our overlays: it must match what the nixos-cuda Hydra
-          # builds, or Blender (and its CUDA deps) compile locally.
-          pkgsCuda = import nixpkgs {
-            inherit system;
-            config = {
-              allowUnfree = true;
-              cudaSupport = true;
-            };
-          };
-
-          # nix-gl-host only puts its glx/cuda/egl dirs on LD_LIBRARY_PATH; the
-          # rest of the host driver lands in a lib/ dir reachable solely via
-          # those DSOs' RPATH. OptiX is dlopen'ed directly by Cycles, so move
-          # libnvoptix into the CUDA set (its own RPATH still finds rtcore).
-          # It also copies (not symlinks) libcuda.so and libcuda.so.1, and
-          # Cycles and OptiX dlopen different names: two driver instances,
-          # OptiX then sees an uninitialised CUDA. Skip the unversioned one.
-          nixglhost = nix-gl-host.packages.${system}.default.overrideAttrs (o: {
-            postPatch = (o.postPatch or "") + ''
-              substituteInPlace src/nixglhost.py \
-                --replace-fail '    "libnvoptix\\.so.*$",' "" \
-                --replace-fail '"libcuda\\.so.*$",' '"libcuda\\.so\\..*$", "libnvoptix\\.so.*$",'
-              # upstream's checkPhase runs `black --check`
-              black -q src/nixglhost.py
-            '';
-          });
-
-          # Blender with Cycles CUDA/OptiX kernels, run against the host
-          # NVIDIA driver. Needs the nixos-cuda substituter (cache.nixos-cuda.org)
-          # in nix.conf; without it this is a multi-hour local build.
-          blender = pkgs.writeShellApplication {
-            name = "blender";
-            text = ''
-              # A sourced ROS/other env would otherwise shadow Nix RUNPATHs.
-              unset LD_LIBRARY_PATH
-              exec ${nixglhost}/bin/nixglhost ${pkgsCuda.blender}/bin/blender "$@"
-            '';
-          };
-
-          # KiCad (with 3D models) run against the host NVIDIA driver: the PCB
-          # editor's accelerated canvas and the 3D viewer need OpenGL.
-          kicad = pkgs.writeShellApplication {
-            name = "kicad";
-            text = ''
-              # A sourced ROS/other env would otherwise shadow Nix RUNPATHs.
-              unset LD_LIBRARY_PATH
-              exec ${nixglhost}/bin/nixglhost ${pkgs.kicad}/bin/kicad "$@"
-            '';
-          };
-
           # Cross-compilation package sets
           pkgsCrossAarch64Musl = pkgs.pkgsCross.aarch64-multiplatform-musl;
           pkgsCrossMusl64 = pkgs.pkgsCross.musl64;
@@ -155,37 +96,6 @@
           # Newest claude-code definition from the master pin, dependencies
           # from the cached main nixpkgs (see inputs comment).
           claude-code = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/cl/claude-code/package.nix" { };
-
-          # OpenAI Codex CLI, same pattern: definition from the master pin,
-          # dependencies from the cached main nixpkgs.
-          codex-cli = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/co/codex/package.nix" { };
-
-          # A directly runnable copy of the agent environment, useful for
-          # diagnostics and for tools launched outside an existing agent session.
-          codex-tools = pkgs.writeShellApplication {
-            name = "codex-tools";
-            runtimeInputs = deps.agentPackages ++ rustPackages;
-            text = ''
-              if [ "$#" -eq 0 ]; then
-                echo 'Usage: codex-tools COMMAND [ARG...]' >&2
-                exit 2
-              fi
-              ${deps.shellHook}
-              exec "$@"
-            '';
-          };
-
-          # Codex gets the same tools and build environment as Claude. Keep MCP
-          # configuration declarative and authentication in the user's CODEX_HOME.
-          codex = pkgs.writeShellApplication {
-            name = "codex";
-            text = ''
-              exec ${codex-tools}/bin/codex-tools ${codex-cli}/bin/codex \
-                --config 'mcp_servers.openaiDeveloperDocs.url="https://developers.openai.com/mcp"' \
-                --config 'mcp_servers.context7.command="${pkgs.context7-mcp}/bin/context7-mcp"' \
-                "$@"
-            '';
-          };
 
           # Rust toolchain with cross-compilation targets. `minimal` base
           # profile: `default` would add rust-docs (~700 MiB of offline HTML)
@@ -263,12 +173,6 @@
             default = neovim-with-lsps;
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
-            inherit
-              blender
-              codex
-              codex-tools
-              kicad
-              ;
           };
 
           devShells = {
@@ -314,7 +218,6 @@
           checks = {
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
-            inherit codex codex-tools;
           };
 
           formatter = pkgs.nixfmt-tree;
