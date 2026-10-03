@@ -7,7 +7,10 @@
 # from editorPackages (packages/dependencies) plus rust-analyzer from the
 # rust-overlay toolchain. Keep the two lists in sync. MCP servers reference
 # absolute store paths instead, so they need no PATH entry.
-{ pkgs }:
+#
+# Skills live in ./skills/<name>/SKILL.md; `@codexReview@` in them is replaced
+# with the codex-review store path, so they need no PATH entry either.
+{ pkgs, codexReview }:
 let
   lspServers = {
     bash = {
@@ -141,7 +144,7 @@ let
 
   manifest = {
     name = "nix-dev";
-    description = "Declarative Claude Code config from the dev flake: language servers and MCP servers";
+    description = "Declarative Claude Code config from the dev flake: language servers, MCP servers and skills";
     version = "1.0.0";
     lspServers = "./.lsp.json";
     mcpServers = "./.mcp.json";
@@ -158,10 +161,16 @@ pkgs.runCommand "claude-plugin"
     lsp = builtins.toJSON lspServers;
     mcp = builtins.toJSON mcpServers;
     nativeBuildInputs = [ pkgs.jq ];
+    inherit codexReview;
   }
   ''
     mkdir -p $out/.claude-plugin
     jq . "$manifestPath" > $out/.claude-plugin/plugin.json
     jq . "$lspPath" > $out/.lsp.json
     jq . "$mcpPath" > $out/.mcp.json
+    cp -r ${./skills} $out/skills
+    chmod -R u+w $out/skills
+    for skill in $out/skills/*/SKILL.md; do
+      substituteInPlace "$skill" --subst-var codexReview
+    done
   ''

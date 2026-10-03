@@ -28,6 +28,10 @@
 - `/packages`: Contains all packages defined in the flake
 - `/packages/neovim`: Neovim configuration
 - `/packages/dependencies`: System dependencies
+- `/packages/claude-plugin`: The `nix-dev` Claude Code plugin (LSP servers, MCP
+  servers, skills under `skills/<name>/SKILL.md`)
+- `/packages/codex-review`: Unsandboxed Codex (GPT-6.1 Sol, high) review script
+  behind the plugin's `codex-review` skill (`nix run .#codex-review -- --help`)
 - `/packages/{blender,kicad,steam,wot}`: Standalone sub-flakes with their own
   `flake.lock`, not outputs of the root flake (`nix run path:./packages/<name>`)
 - Maintain separation between plugins, config and keymaps

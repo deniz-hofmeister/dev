@@ -157,8 +157,11 @@
           };
 
           # Declarative Claude Code plugin: LSP servers (resolved from the
-          # wrapper's PATH) and MCP servers (absolute store paths).
-          claudePlugin = import ./packages/claude-plugin { inherit pkgs; };
+          # wrapper's PATH), MCP servers and skills (absolute store paths).
+          claudePlugin = import ./packages/claude-plugin {
+            inherit pkgs;
+            codexReview = codex-review;
+          };
 
           # Wrapped Claude Code: editor tooling + headless CLI tools. GUI and
           # interactive-only packages stay in the dev shells.
@@ -198,13 +201,16 @@
                 "$@"
             '';
           };
+
+          # Unsandboxed Codex review for the claude plugin's codex-review skill.
+          codex-review = import ./packages/codex-review { inherit pkgs codex; };
         in
         {
           packages = {
             default = neovim-with-lsps;
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
-            inherit codex codex-tools;
+            inherit codex codex-tools codex-review;
           };
 
           devShells = {
@@ -250,7 +256,7 @@
           checks = {
             neovim = neovim-with-lsps;
             claude = claude-with-deps;
-            inherit codex codex-tools;
+            inherit codex codex-tools codex-review;
           };
 
           formatter = pkgs.nixfmt-tree;
