@@ -1,19 +1,25 @@
-# codex-review: independent code review by Codex, for Claude Code (and humans).
+# codex-review: independent code review or free-form consultation by Codex,
+# for Claude Code (and humans).
 #
 # Codex runs unsandboxed with live web search: it may build, run tests, write
 # repro scripts and read docs to confirm what it finds. Progress goes to a log
-# in the run directory; stdout gets only a header and the final review, so the
+# in the run directory; stdout gets only a header and the final answer, so the
 # caller's context isn't flooded with Codex's event stream.
 
 usage() {
   cat <<'EOF'
 Usage: codex-review [TARGET] [OPTIONS] [FOCUS...]
+       codex-review --ask [OPTIONS] QUESTION...
        codex-review --resume SESSION_ID [OPTIONS] MESSAGE...
 
 Targets (default: --uncommitted when the tree is dirty):
   --uncommitted        staged, unstaged and untracked changes
   --base BRANCH        changes on HEAD since it forked from BRANCH
   --commit SHA         the changes introduced by one commit
+
+Free-form consultation (no diff; works outside git repositories too):
+  --ask                QUESTION is the whole brief, answered from the
+                       current directory (the repository root inside git)
 
 Options:
   --model MODEL        default: gpt-6.1-sol
@@ -22,7 +28,8 @@ Options:
 
 FOCUS is free text appended to the review brief ("concurrency in the
 scheduler", "is the migration reversible?"). --resume continues an earlier
-review session with MESSAGE, e.g. to dispute a finding or ask for more depth.
+review or consultation with MESSAGE, e.g. to dispute a finding or ask for more
+depth. A lone - as QUESTION, FOCUS or MESSAGE reads it from stdin.
 EOF
 }
 
@@ -34,7 +41,7 @@ resume=
 
 while [ $# -gt 0 ]; do
   case $1 in
-    --uncommitted) target=uncommitted ;;
+    --uncommitted | --ask) target=${1#--} ;;
     --base | --commit)
       target=${1#--}
       target_arg=${2:?$1 needs an argument}
@@ -60,6 +67,7 @@ while [ $# -gt 0 ]; do
       shift
       break
       ;;
+    -) break ;;
     -*)
       echo "codex-review: unknown option $1" >&2
       usage >&2
@@ -70,10 +78,17 @@ while [ $# -gt 0 ]; do
   shift
 done
 focus=$*
+[ "$focus" = - ] && focus=$(cat)
 
+# Reviews need a repository; a consultation or follow-up may start anywhere.
+in_git=1
 root=$(git rev-parse --show-toplevel 2>/dev/null) || {
-  echo "codex-review: not inside a git repository" >&2
-  exit 1
+  in_git=
+  root=$PWD
+  if [ -z "$resume" ] && [ "$target" != ask ]; then
+    echo "codex-review: not inside a git repository (use --ask for a free-form question)" >&2
+    exit 1
+  fi
 }
 cd "$root" || exit 1
 
@@ -103,7 +118,7 @@ mkdir -p "$state"
 run=$(mktemp -d "$state/$(date +%Y%m%d-%H%M%S)-$(basename "$root").XXXXXX")
 scratch=$run/scratch
 mkdir "$scratch"
-tree_state >"$run/tree-before"
+[ -n "$in_git" ] && tree_state >"$run/tree-before"
 
 common=(
   --dangerously-bypass-approvals-and-sandbox
@@ -113,6 +128,7 @@ common=(
   --json
   --output-last-message "$run/review.md"
 )
+[ -n "$in_git" ] || common+=(--skip-git-repo-check)
 
 if [ -n "$resume" ]; then
   [ -n "$focus" ] || {
@@ -122,6 +138,62 @@ if [ -n "$resume" ]; then
   label="follow-up on $resume"
   printf '%s\n' "$focus" >"$run/prompt.md"
   cmd=(codex exec resume "${common[@]}" "$resume" -)
+elif [ "$target" = ask ]; then
+  [ -n "$focus" ] || {
+    echo "codex-review: --ask needs a QUESTION" >&2
+    exit 2
+  }
+  label="question"
+  if [ -n "$in_git" ]; then
+    where="the git repository at $root"
+  else
+    where="$root (not a git repository)"
+  fi
+
+  cat >"$run/prompt.md" <<EOF
+You are an independent consultant. Another agent (Claude) is working for the
+user and wants your second opinion; it will check your answer and decide what
+to do with it, so precision matters more than volume. Disagree when the
+question's premise or framing is wrong.
+
+## Question
+
+$focus
+
+## Where you are
+
+Your working directory is $where. The question may concern it, another path
+it names, or no files at all.
+
+## How to work
+
+You have full, unsandboxed access to this machine and the network, and live
+web search. Use whatever turns a guess into evidence:
+
+- Read the relevant code, configuration and docs before answering.
+- Build, run, measure or write throwaway experiments to test a claim.
+- Search the web and official docs for current behaviour, versions, known
+  issues and prior art instead of relying on memory.
+
+## Leave the user's work as you found it
+
+Do not edit, revert, stage, stash, commit, reset or check out anything in the
+user's files or repositories, and do not push, deploy or message anyone. Put
+scratch files, experiments and extra worktrees in $scratch. Build output that
+git ignores is fine. Express proposed changes as patches in the answer, not as
+edits.
+
+## Answer
+
+Your final message is the answer, in Markdown:
+
+1. The direct answer, in a sentence or two.
+2. Reasoning and evidence: what you read, ran or found, citing \`file:line\`,
+   commands and URLs.
+3. Alternatives and objections worth weighing, if any.
+4. Uncertainty: what you could not verify, and how confident you are.
+EOF
+  cmd=(codex exec "${common[@]}" -)
 else
   if [ -z "$target" ]; then
     if [ -n "$(git status --porcelain)" ]; then
@@ -214,16 +286,18 @@ session=${session:-$resume}
 echo "session: ${session:-unknown}"
 [ -n "$session" ] && echo "follow up: codex-review --resume $session \"...\""
 
-tree_state >"$run/tree-after"
-if ! cmp -s "$run/tree-before" "$run/tree-after"; then
-  echo
-  echo "WARNING: the working tree changed during the review (before/after):"
-  diff "$run/tree-before" "$run/tree-after" | grep '^[<>]' || true
+if [ -n "$in_git" ]; then
+  tree_state >"$run/tree-after"
+  if ! cmp -s "$run/tree-before" "$run/tree-after"; then
+    echo
+    echo "WARNING: the working tree changed during the run (before/after):"
+    diff "$run/tree-before" "$run/tree-after" | grep '^[<>]' || true
+  fi
 fi
 
 if [ "$status" -ne 0 ] || [ ! -s "$run/review.md" ]; then
   echo
-  echo "codex exited with status $status and no review. Last log lines:"
+  echo "codex exited with status $status and no answer. Last log lines:"
   tail -n 20 "$run/stderr.log"
   exit "$((status ? status : 1))"
 fi
