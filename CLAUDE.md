@@ -6,7 +6,7 @@
 - Run neovim: `nix run .#neovim`
 - Run zsh shell: `nix run .#zsh`
 - Format nix files: `nixfmt *.nix`
-- Install shell aliases (nv, dev, cl, cld, cx, cxd, blender, kicad, steam, wot): `./install-aliases.sh [--dry-run]`
+- Install shell aliases (nv, dev, cl, cld, cx, cxd, blender, kicad, steam): `./install-aliases.sh [--dry-run]`
 
 ## Code Style Guidelines
 
@@ -33,6 +33,6 @@
 - `/packages/codex-review`: Unsandboxed Codex (GPT-6.1 Sol, high) review and
   free-form consultation (`--ask`) script behind the plugin's `codex-review`
   skill (`nix run .#codex-review -- --help`)
-- `/packages/{blender,kicad,steam,wot}`: Standalone sub-flakes with their own
+- `/packages/{blender,kicad,steam}`: Standalone sub-flakes with their own
   `flake.lock`, not outputs of the root flake (`nix run path:./packages/<name>`)
 - Maintain separation between plugins, config and keymaps

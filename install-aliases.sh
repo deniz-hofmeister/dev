@@ -23,7 +23,6 @@ aliases=(
   "blender=nix run path:$repo/packages/blender --"
   "kicad=nix run path:$repo/packages/kicad --"
   "steam=nix run path:$repo/packages/steam --"
-  "wot=nix run path:$repo/packages/wot --"
 )
 
 begin="# >>> dev-flake aliases >>>"
