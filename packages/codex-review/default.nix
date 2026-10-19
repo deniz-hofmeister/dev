@@ -4,18 +4,22 @@
 # `nix run .#codex-review`.
 #
 # `codex` is the flake's wrapped Codex (same tools and build environment as
-# Claude); model, effort and permissions are set per call in the script, so
-# ~/.codex/config.toml only supplies auth and project trust.
-{ pkgs, codex }:
+# Claude), run via `nix run` on first use rather than referenced by store path,
+# so building Claude never builds or downloads Codex. Model, effort and
+# permissions are set per call in the script, so ~/.codex/config.toml only
+# supplies auth and project trust.
+{ pkgs, flake }:
 pkgs.writeShellApplication {
   name = "codex-review";
   runtimeInputs = [
-    codex
     pkgs.coreutils
     pkgs.diffutils
     pkgs.git
     pkgs.gnugrep
     pkgs.gnused
   ];
-  text = builtins.readFile ./codex-review.sh;
+  text = ''
+    codex() { nix run ${flake}#codex -- "$@"; }
+  ''
+  + builtins.readFile ./codex-review.sh;
 }

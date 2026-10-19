@@ -97,9 +97,10 @@
           # from the cached main nixpkgs (see inputs comment).
           claude-code = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/cl/claude-code/package.nix" { };
 
-          # OpenAI Codex CLI, same pattern: definition from the master pin,
-          # dependencies from the cached main nixpkgs.
-          codex-cli = pkgs.callPackage "${nixpkgs-claude}/pkgs/by-name/co/codex/package.nix" { };
+          # OpenAI Codex CLI straight from the cached main nixpkgs. A master
+          # definition on unstable's deps (as for claude-code) is never in
+          # cache.nixos.org and recompiles the Rust workspace on every bump.
+          codex-cli = pkgs.codex;
 
           # Rust toolchain with cross-compilation targets. `minimal` base
           # profile: `default` would add rust-docs (~700 MiB of offline HTML)
@@ -203,7 +204,12 @@
           };
 
           # Unsandboxed Codex review for the claude plugin's codex-review skill.
-          codex-review = import ./packages/codex-review { inherit pkgs codex; };
+          # Resolves this flake's codex at call time, keeping it out of the
+          # Claude closure.
+          codex-review = import ./packages/codex-review {
+            inherit pkgs;
+            flake = self;
+          };
         in
         {
           packages = {
